@@ -1,0 +1,53 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Org.OpenAPITools", "src\Org.OpenAPITools\Org.OpenAPITools.csproj", "{843B5EA2-D1A4-4236-B51A-539262FE2AB5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Org.OpenAPITools.Test", "src\Org.OpenAPITools.Test\Org.OpenAPITools.Test.csproj", "{19F1DEBC-DE5E-4517-8062-F000CD499087}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src", "src", "{BCB5F0D3-D985-4E21-AC5C-1473F1D9E9B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dna.Utils", "src\Dna.Utils\Dna.Utils.csproj", "{536B231D-2F0A-4F88-BBAD-160F5852D085}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{41E5ACD5-9FAD-48E2-91CE-4A0DEC411B98}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dna.Example", "Dna.Example", "{60A6A87D-6104-47EA-8F22-BF2D464CF822}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TourOptimizer", "TourOptimizer", "{B0944D60-B2BC-48D8-80B2-DD46785C7490}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourOptimizerOptimizeExample", "src\Dna.Example\TourOptimizer\optimize\TourOptimizerOptimizeExample.csproj", "{37C29036-C80A-4941-B002-F73DE9710C45}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{843B5EA2-D1A4-4236-B51A-539262FE2AB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{843B5EA2-D1A4-4236-B51A-539262FE2AB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{843B5EA2-D1A4-4236-B51A-539262FE2AB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{843B5EA2-D1A4-4236-B51A-539262FE2AB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19F1DEBC-DE5E-4517-8062-F000CD499087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19F1DEBC-DE5E-4517-8062-F000CD499087}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19F1DEBC-DE5E-4517-8062-F000CD499087}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19F1DEBC-DE5E-4517-8062-F000CD499087}.Release|Any CPU.Build.0 = Release|Any CPU
+		{536B231D-2F0A-4F88-BBAD-160F5852D085}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{536B231D-2F0A-4F88-BBAD-160F5852D085}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{536B231D-2F0A-4F88-BBAD-160F5852D085}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{536B231D-2F0A-4F88-BBAD-160F5852D085}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37C29036-C80A-4941-B002-F73DE9710C45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37C29036-C80A-4941-B002-F73DE9710C45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37C29036-C80A-4941-B002-F73DE9710C45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37C29036-C80A-4941-B002-F73DE9710C45}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{536B231D-2F0A-4F88-BBAD-160F5852D085} = {BCB5F0D3-D985-4E21-AC5C-1473F1D9E9B5}
+		{60A6A87D-6104-47EA-8F22-BF2D464CF822} = {41E5ACD5-9FAD-48E2-91CE-4A0DEC411B98}
+		{B0944D60-B2BC-48D8-80B2-DD46785C7490} = {60A6A87D-6104-47EA-8F22-BF2D464CF822}
+		{37C29036-C80A-4941-B002-F73DE9710C45} = {B0944D60-B2BC-48D8-80B2-DD46785C7490}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>        <!-- setting GenerateAssemblyInfo to false causes this bug https://github.com/dotnet/project-system/issues/3934 -->
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Dna.Utils</AssemblyName>
+        <PackageId>Dna.Utils</PackageId>
+        <OutputType>Library</OutputType>
+        <Authors>DNA Evolutions</Authors>
+        <Company>DNA Evolutions</Company>
+        <AssemblyTitle>DNA Evolutions Utils Library</AssemblyTitle>
+        <Description>A library for DNA Evolutions c# utils</Description>
+        <Copyright>DNA Evolutions (c)</Copyright>
+        <Version>1.0.0</Version>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JsonSubTypes" Version="1.8.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Polly" Version="7.2.3" />
+        <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include = "..\Org.OpenAPITools\Org.OpenAPITools.csproj" />
+    </ItemGroup>
+
+</Project>
