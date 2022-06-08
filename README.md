@@ -48,7 +48,7 @@ Optimize a problem consisting of Nodes, Resources, and optionally externally pro
 # Outline of this repository
 
 Examples</a>
-1. <a href="https://github.com/DNA-Evolutions/Csharp-REST-Client-Examples/tree/master/src/DNA-Example/TourOptimizer/optimize" target="_blank">TourOptimizer Optimize Examples</a>
+1. <a href="https://github.com/DNA-Evolutions/C-Sharp-REST-Client-Examples/tree/master/src/Dna.Example/TourOptimizer" target="_blank">TourOptimizer Examples</a>
 
 Each of the sections has its README.
 
