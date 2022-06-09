@@ -113,3 +113,11 @@ Click to open our video:
 title="Introduction Video for DNA's JOpt" alt="Introduction Video for DNA's JOpt"></a>
 
 ---
+
+## Agreement
+For reading our license agreement and for further information about license plans, please visit <a href="https://www.dna-evolutions.com" target="_blank">www.dna-evolutions.com</a>.
+
+--- 
+
+## Authors
+A product by [dna-evolutions ](https://www.dna-evolutions.com)&copy;
