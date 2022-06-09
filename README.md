@@ -41,7 +41,7 @@ All our RESTful Services utilize <a href="https://docs.spring.io/spring/docs/cur
 title="DNA-Evolutions Integration" alt="DNA-Evolutions Integration"></a>
 
 ### JOpt-TourOptimizer
-Optimize a problem consisting of Nodes, Resources, and optionally externally provided connections. In contrast to our other services, we allow you to host your JOpt-TourOptimizer locally.
+Optimize a problem consisting of Nodes, Resources, and optionally externally provided connections. In contrast to our other services, we allow you to host your JOpt-TourOptimizer locally. Please refer to <a href="https://github.com/DNA-Evolutions/Docker-REST-TourOptimizer#how-to-start-jopttouroptimizer-docker" target="_blank">"How to start JOpt TourOptimizer in docker"</a> for more help.
 
 ---
 
