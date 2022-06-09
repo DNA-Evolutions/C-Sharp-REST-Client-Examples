@@ -60,8 +60,6 @@ namespace Utils
                 {
                     coreBuildOptionsCoreProperties.Add(entry.Key, entry.Value);
 
-                    System.Console.WriteLine("XXX4");
-
                 }
             }
 
