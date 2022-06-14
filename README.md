@@ -85,7 +85,7 @@ You can start using our examples:
 
 
 ## Clone this repository
-Clone this repository and open it, for example, with Visual Code. The `DNA.Evolutions.Csharp.Rest.sln` file contains four projects that need to be built.
+Clone this repository and open it, for example, with Visual Code. The `DNA.Evolutions.Csharp.Rest.sln` file contains three util-projects that need to be built. In addition, it contains multiple example-projects that will be built.
 
 
 ## Build necessary files
@@ -96,11 +96,11 @@ You can call (from the main folder):
 	dotnet build
 ```
 
-The call will generate the `OpenApiTools.dll`, `Dna.Utils.dll` and the `TourOptimizerExample.exe` and will download all dependencies. The target-framework is `netstandard2.0` (for the libraries) and `netcoreapp6.0` (for the executable). You can also use Microsoft Visual Studio and perform the standard solution build process.
+The call will generate the `OpenApiTools.dll`, `Dna.Utils.dll` and the example-executables (e.g. `TourOptimizerExample.exe`) and will download all dependencies. The target-framework is `netstandard2.0` (for the libraries) and `netcoreapp6.0` (for the executables). You can also use Microsoft Visual Studio and perform the standard solution build process.
  
 ## Run the examples
 
-Go to `src\Dna.Example\TourOptimizer\optimize\bin\Debug\netcoreapp6.0\` and call the executable `TourOptimizerExample.exe`. By default, it expects a locally running TourOptimizer at <a href="http://localhost:8081" target="_blank">http://localhost:8081</a>.
+For example, go to `src\Dna.Example\TourOptimizer\optimize\bin\Debug\netcoreapp6.0\` and call the executable `TourOptimizerExample.exe`. By default, it expects a locally running TourOptimizer at <a href="http://localhost:8081" target="_blank">http://localhost:8081</a>.
 
 
 
