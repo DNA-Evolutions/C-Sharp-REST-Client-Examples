@@ -57,6 +57,54 @@ namespace Utils
             return res;
         }
 
+        public static Resource defaultCapacityResourceWithQulaificationConstraint(Position pos, String id, String qualificationDesc)
+        {
+
+            CapacityResource type = new CapacityResource();
+            type.TypeName = "Capacity";
+            string maxTime = "PT12H";
+            string maxDistance = "1200.0 km";
+
+            List<double> capacity = new List<double>();
+            List<double> initialLoad = new List<double>();
+            List<double> minDegratedCapacity = new List<double>();
+            List<double> capacityDegPerStop = new List<double>();
+
+            Resource res = new Resource(id: id,
+                locationId: pos.LocationId,
+                type: type, position: pos,
+                workingHours: defaultTestWorkinghours(),
+                maxTime: maxTime,
+                maxDistance: maxDistance,
+                capacity: capacity,
+                initialLoad: initialLoad,
+                minDegratedCapacity: minDegratedCapacity,
+                capacityDegPerStop: capacityDegPerStop,
+                qualifications: createQualifcations(qualificationDesc));
+
+            return res;
+        }
+
+        public static List<Qualification> createQualifcations(string exampleQuali)
+        {
+
+            List<Qualification> qualifications = new List<Qualification>();
+
+            List<string> typeQualis = new List<string>();
+
+            typeQualis.Add(exampleQuali);
+
+            TypeQualification quali = new TypeQualification(typeQualis);
+
+            //quali.TypeNames = typeQualis;
+
+            // Add to list
+            qualifications.Add(new Qualification(quali));
+
+            return qualifications;
+
+        }
+
         public static List<WorkingHours> defaultTestWorkinghours()
         {
 
@@ -120,6 +168,54 @@ namespace Utils
             node.Priority = 1;
 
             return node;
+        }
+
+        public static Node defaultGeoNodeWithTypeConstraint(Position pos, String id, String typeConstraintTitle)
+        {
+
+            GeoNode geoPart = new GeoNode(pos);
+            geoPart.TypeName = "Geo";
+
+            string visitDuration = "PT30M";
+
+
+            List<Constraint> constrains = new List<Constraint>();
+            List<double> load = new List<double>();
+            List<Qualification> qualifications = new List<Qualification>();
+
+            Node node = new Node(id: id,
+                locationId: pos.LocationId,
+                type: geoPart,
+                openingHours: defaultTestOpeninghours(),
+                visitDuration: visitDuration,
+                constraints: createNodeTypeConstraints(typeConstraintTitle),
+                load: load,
+                qualifications: qualifications);
+
+            node.Priority = 1;
+
+            return node;
+        }
+
+        
+        public static List<Constraint> createNodeTypeConstraints(string nodeTypeConstraintTitle)
+        {
+
+            List<Constraint> constraints = new List<Constraint>();
+
+            // Type
+
+            List<string> typeConstraintTitles = new List<string>();
+
+            typeConstraintTitles.Add(nodeTypeConstraintTitle);
+
+            TypeConstraint typeConstraint = new TypeConstraint(typeConstraintTitles);
+
+            // Add to List
+            constraints.Add(new Constraint(typeConstraint));
+
+            return constraints;
+
         }
 
         public static List<OpeningHours> defaultTestOpeninghours(int choosenSingleDayIndex)

@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TourOptimizer", "TourOptimi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TourOptimizerExample", "src\Dna.Example\TourOptimizer\optimize\TourOptimizerExample.csproj", "{37C29036-C80A-4941-B002-F73DE9710C45}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourOptimizerConstraintExample", "src\Dna.Example\TourOptimizer\constraint\TourOptimizerConstraintExample.csproj", "{DB074A85-451E-4375-B8F2-F99ED94A7A40}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{37C29036-C80A-4941-B002-F73DE9710C45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37C29036-C80A-4941-B002-F73DE9710C45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37C29036-C80A-4941-B002-F73DE9710C45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB074A85-451E-4375-B8F2-F99ED94A7A40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB074A85-451E-4375-B8F2-F99ED94A7A40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB074A85-451E-4375-B8F2-F99ED94A7A40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB074A85-451E-4375-B8F2-F99ED94A7A40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{60A6A87D-6104-47EA-8F22-BF2D464CF822} = {41E5ACD5-9FAD-48E2-91CE-4A0DEC411B98}
 		{B0944D60-B2BC-48D8-80B2-DD46785C7490} = {60A6A87D-6104-47EA-8F22-BF2D464CF822}
 		{37C29036-C80A-4941-B002-F73DE9710C45} = {B0944D60-B2BC-48D8-80B2-DD46785C7490}
+		{DB074A85-451E-4375-B8F2-F99ED94A7A40} = {B0944D60-B2BC-48D8-80B2-DD46785C7490}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {829D024F-9E13-4F54-8493-3A785C4F6478}

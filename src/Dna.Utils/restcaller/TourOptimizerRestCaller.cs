@@ -83,6 +83,27 @@ namespace Optimize
         }
 
 
+        public RestOptimization optimize(List<Node> nodes, List<Resource> ress,
+            List<ElementConnection> connections, string jsonLicense)
+        {
+
+            if (String.IsNullOrEmpty(jsonLicense))
+            {
+                jsonLicense = TestRestOptimizationCreator.PUBLIC_JSON_LICENSE;
+            }
+
+
+            RestOptimization optimization = TestRestOptimizationCreator.defaultTouroptimizerTestInput(nodes, ress,
+                jsonLicense);
+
+            optimization.ElementConnections = connections;
+
+            // This will keep the example alive. Otherwise just subscribe
+            return optimize(optimization);
+        }
+
+        
+
         public RestOptimization optimize(List<Position> nodePoss, List<Position> ressPoss,
             List<ElementConnection> connections, string jsonLicense)
         {
@@ -111,13 +132,7 @@ namespace Optimize
             });
 
 
-            RestOptimization optimization = TestRestOptimizationCreator.defaultTouroptimizerTestInput(nodes, ress,
-                jsonLicense);
-
-            optimization.ElementConnections = connections;
-
-            // This will keep the example alive. Otherwise just subscribe
-            return optimize(optimization);
+            return optimize(nodes,ress,connections,jsonLicense);
         }
 
         public Solution optimizeOnlyResult(List<Position> nodePoss, List<Position> ressPoss,
