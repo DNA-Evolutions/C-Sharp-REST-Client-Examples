@@ -2,7 +2,7 @@
  * #%L
  * JOpt C# REST Client Examples
  * %%
- * Copyright (C) 2017 - 2022 DNA Evolutions GmbH
+ * Copyright (C) 2017 - 2023 DNA Evolutions GmbH
  * %%
  * This file is subject to the terms and conditions defined in file 'LICENSE.md',
  * which is part of this repository.
@@ -32,6 +32,10 @@ namespace Optimize
 
         private OptimizationServiceControllerApi geoOptimizerApi;
 
+        private OptimizationFAFServiceControllerApi geoFafOptimizerApi;
+
+        private ReadDatabaseServiceControllerApi geoReadDatabaseApi;
+
         public const string ISO8601_DATETIME_FORMAT = "o";
 
         public TourOptimizerRestCaller(String tourOptimizerUrl, string azureApiKey = "")
@@ -42,10 +46,27 @@ namespace Optimize
 
             this.geoOptimizerApi = new OptimizationServiceControllerApi(client, tourOptimizerUrl);
 
-            ApiClient apiClient = this.geoOptimizerApi.ApiClient;
+            ApiClient optApiClient = this.geoOptimizerApi.ApiClient;
 
             // Configure ApiClient
-            configureApiClient(apiClient);
+            configureApiClient(optApiClient);
+
+            //
+            this.geoFafOptimizerApi = new OptimizationFAFServiceControllerApi(client, tourOptimizerUrl);
+
+            ApiClient apiFAFClient = this.geoFafOptimizerApi.ApiClient;
+
+            // Configure ApiClient
+            configureApiClient(apiFAFClient);
+
+
+            //
+            this.geoReadDatabaseApi = new ReadDatabaseServiceControllerApi(client, tourOptimizerUrl);
+
+            ApiClient apiReadFAFClient = this.geoReadDatabaseApi.ApiClient;
+
+            // Configure ApiClient
+            configureApiClient(apiReadFAFClient);
 
             if (!string.IsNullOrEmpty(azureApiKey))
             {
@@ -102,7 +123,6 @@ namespace Optimize
             return optimize(optimization);
         }
 
-        
 
         public RestOptimization optimize(List<Position> nodePoss, List<Position> ressPoss,
             List<ElementConnection> connections, string jsonLicense)
@@ -132,8 +152,9 @@ namespace Optimize
             });
 
 
-            return optimize(nodes,ress,connections,jsonLicense);
+            return optimize(nodes, ress, connections, jsonLicense);
         }
+
 
         public Solution optimizeOnlyResult(List<Position> nodePoss, List<Position> ressPoss,
             List<ElementConnection> connections, String jsonLicense)
@@ -188,6 +209,103 @@ namespace Optimize
             resultTask.Wait();
 
             return resultTask.Result;
+        }
+
+
+        //
+        //
+        //
+
+
+        public Boolean optimizeFireAndForget(List<Position> nodePoss, List<Position> ressPoss,
+            List<ElementConnection> connections, string optiIdent,
+            CreatorSetting creatorSettings, OptimizationPersistenceSetting persistenceSetting, string jsonLicense)
+        {
+
+            if (String.IsNullOrEmpty(jsonLicense))
+            {
+                jsonLicense = TestRestOptimizationCreator.PUBLIC_JSON_LICENSE;
+            }
+
+
+            List<Node> nodes = new List<Node>();
+
+            nodePoss.ForEach(delegate (Position curPos)
+            {
+                Node curNode = Utils.TestElementCreator.defaultGeoNode(curPos, curPos.LocationId);
+                nodes.Add(curNode);
+            });
+
+
+            List<Resource> ress = new List<Resource>();
+
+            ressPoss.ForEach(delegate (Position curPos)
+            {
+                Resource curRes = Utils.TestElementCreator.defaultCapacityResource(curPos, curPos.LocationId);
+                ress.Add(curRes);
+            });
+
+
+            return optimizeFireAndForget(nodes, ress, connections, optiIdent, creatorSettings, persistenceSetting, jsonLicense);
+        }
+
+
+        public Boolean optimizeFireAndForget(List<Node> nodes, List<Resource> ress,
+            List<ElementConnection> connections, string optiIdent,
+            CreatorSetting creatorSettings, OptimizationPersistenceSetting persistenceSetting,
+            string jsonLicense)
+        {
+
+            if (String.IsNullOrEmpty(jsonLicense))
+            {
+                jsonLicense = TestRestOptimizationCreator.PUBLIC_JSON_LICENSE;
+            }
+
+
+            RestOptimization optimization = TestRestOptimizationCreator.defaultTouroptimizerTestInput(nodes, ress,
+                jsonLicense);
+
+            optimization.ElementConnections = connections;
+
+
+            // Modify defaults
+            optimization.Ident = optiIdent;
+            JSONConfig curExt = optimization.Extension;
+
+            curExt.CreatorSetting = creatorSettings;
+
+            curExt.PersistenceSetting = persistenceSetting;
+
+            // This will keep the example alive. Otherwise just subscribe
+            return optimizeFireAndForget(optimization);
+        }
+
+        public Boolean optimizeFireAndForget(RestOptimization optimization)
+        {
+
+            // Trigger the Optimization
+            System.Threading.Tasks.Task<Boolean> resultTask = this.geoFafOptimizerApi.RunFAFAsync(optimization);
+
+            resultTask.Wait();
+
+            return resultTask.Result;
+
+        }
+
+
+        public List<DatabaseInfoSearchResult> findOptimizationInfosInDatabase(DatabaseInfoSearch searchItem)
+        {
+            List<DatabaseInfoSearchResult> result = this.geoReadDatabaseApi.FindsOptimizationInfos(searchItem);
+            return result;
+        }
+
+
+        public RestOptimization findOptimizationInDatabase(DatabaseItemSearch searchItem)
+        {
+
+            RestOptimization result = this.geoReadDatabaseApi.FindOptimization(searchItem);
+
+            return result;
         }
 
         public void attachToStreams()
