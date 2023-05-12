@@ -129,7 +129,7 @@ namespace Optimize
             streamPersistenceStratgySetting.SaveStatus = true;
             streamPersistenceStratgySetting.CycleStatus = true;
             streamPersistenceStratgySetting.SaveWarning = true;
-            // streamPersistenceStratgySetting.saveError(true);
+            streamPersistenceStratgySetting.SaveError = true;
 
             /*
              * Settings regarding encryption etc.
