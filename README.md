@@ -69,6 +69,9 @@ where `${PWD}` needs to be adjusted to find the Open-API-docs under `/local/swag
 
 You can also generate a client in the programming language of your choice utilizing our API-docs. REST facilitates software integration in your desired language (including famous ones like C#, Java, JS, Scala, Python, and many more ). Don't hesitate to reach out to us if you need help setting up your client.
 
+
+For setting up a local test enviorment with database support, please refer to the separate **Hands-on Tutorial: Setting Up a Local Fire and Forget TourOptimizer-Database Test Environment** [tutorial](https://github.com/DNA-Evolutions/Docker-REST-TourOptimizer/blob/main/TourOptimizerWithDatabase.md).
+
 ---
 
 # Getting started
@@ -91,7 +94,7 @@ Clone this repository and open it, for example, with Visual Code. The `DNA.Evolu
 ## Build necessary files
 You can call (from the main folder):
 
-```xml
+```bash
 	dotnet restore
 	dotnet build
 ```
