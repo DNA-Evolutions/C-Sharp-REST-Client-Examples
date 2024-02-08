@@ -63,13 +63,29 @@ namespace Utils
             return myOpti;
         }
 
-        public static OptimizationOptionsProperties defaultOptimizationOptionsProperties()
+        public static Dictionary<string, string> defaultOptimizationOptionsProperties()
         {
-            OptimizationOptionsProperties optimizationOptionsProperties = new OptimizationOptionsProperties();
-            optimizationOptionsProperties.Add("JOpt.Algorithm.PreOptimization.SA.NumIterations", "100000");
-            optimizationOptionsProperties.Add("JOptExitCondition.JOptGenerationCount", "1000");
 
-            return optimizationOptionsProperties;
+            /*
+            * Old version
+            */
+            //OptimizationOptionsProperties optimizationOptionsProperties = new OptimizationOptionsProperties();
+            //optimizationOptionsProperties.Add("JOpt.Algorithm.PreOptimization.SA.NumIterations", "100000");
+            //optimizationOptionsProperties.Add("JOptExitCondition.JOptGenerationCount", "1000");
+
+            //return optimizationOptionsProperties;
+
+        
+            /*
+            * Update from Februrary 8th 2024
+            */
+
+            Dictionary<string, string> properties =  new Dictionary<string, string>();
+            properties.Add("JOpt.Algorithm.PreOptimization.SA.NumIterations", "100000");
+            properties.Add("JOptExitCondition.JOptGenerationCount", "1000");
+
+            return properties;
+
         }
 
     }

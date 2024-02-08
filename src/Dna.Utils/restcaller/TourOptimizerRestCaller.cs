@@ -83,8 +83,8 @@ namespace Optimize
         {
 
             // Newton JSON seems to have some issues handling Dictionaries in our case - Let's add some custom deserializer 
-            apiClient.SerializerSettings.Converters.Add(new OptimizationOptionsJsonConverter());
-            apiClient.SerializerSettings.Converters.Add(new CoreBuildOptionsJsonConverter());
+            //apiClient.SerializerSettings.Converters.Add(new OptimizationOptionsJsonConverter());
+            //apiClient.SerializerSettings.Converters.Add(new CoreBuildOptionsJsonConverter());
 
             // This will supress keys that have null values
             apiClient.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
@@ -318,7 +318,6 @@ namespace Optimize
                 if (task.Result)
                 {
                     // The Server returned the start signal
-
                     Console.WriteLine("Optimization started");
 
                     System.Threading.Tasks.Task.Run(() =>

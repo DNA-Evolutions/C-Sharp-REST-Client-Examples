@@ -62,7 +62,7 @@ The C#-REST-Client class files used by the examples of this repository were gene
 For creating the models, we used the containerized version of Open-API-Generator by calling:
 
 ```xml
-docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate  -i '/local/swagger/touroptimizer/spec/touroptimizer_spec.json' -g csharp-netcore -o /local/generated/dna-netcore-models --library=httpclient
+docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate  -i '/local/swagger/touroptimizer/spec/touroptimizer_spec.json' -g csharp -o /local/generated/dna-netcore-models --library=httpclient
 ```
 
 where `${PWD}` needs to be adjusted to find the Open-API-docs under `/local/swagger/touroptimizer/spec/touroptimizer_spec.json` when mounting the volume `${PWD}` into `/local`. Calling the command will generate the folders `/Org.OpenApiTools` and `/Org.OpenApiTools.Test` that are also part of this repository. You can find the `touroptimizer_spec.json` <a href="https://github.com/DNA-Evolutions/C-Sharp-REST-Client-Examples/blob/master/res/swagger/touroptimizer/spec/touroptimizer_spec.json" target="_blank">here</a>.
@@ -83,7 +83,7 @@ You can start using our examples:
 
 ## Prerequisites
 
-* Dotnet SKD 6.x <a href="https://dotnet.microsoft.com/en-us/download/dotnet/6.0" target="_blank">(link)</a>
+* Dotnet SKD 8.x <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">(link)</a>
 * Working Docker environment for local TourOptimizer instance
 
 

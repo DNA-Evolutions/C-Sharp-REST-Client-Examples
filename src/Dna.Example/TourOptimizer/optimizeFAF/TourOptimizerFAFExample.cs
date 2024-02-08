@@ -64,7 +64,7 @@ namespace Optimize
 
             /*
             * A special feature is the magic use of "hash:" as prefix to the creator. The
-            * creator string will not saved, instead only the hash of the creator will be
+            * creator string will not be saved, instead only the hash of the creator will be
             * saved using SHA-256.
             * 
             * This can be used, for example, in a subscription system. A user is identified
@@ -115,7 +115,7 @@ namespace Optimize
             // to skip the connections saving to reduce space
             optimizationPersistenceStratgySetting.SaveConnections = false;
 
-            // // Do we want to only save the result object?
+            // Do we want to only save the result object?
             optimizationPersistenceStratgySetting.SaveOnlyResult = false;
 
 

@@ -8,7 +8,7 @@
       "url" : "https://dna-evolutions.com",
       "email" : "info@dna-evolutions.com"
     },
-    "version" : "1.2.2-SNAPSHOT"
+    "version" : "1.2.6-SNAPSHOT"
   },
   "servers" : [ {
     "url" : "/"
@@ -19,12 +19,6 @@
   }, {
     "name" : "OptimizationHealthController",
     "description" : "Provides the basic functionality to check if Optimization endpoint is still healthy."
-  }, {
-    "name" : "ReadDatabaseDownloadEncryptedServiceController",
-    "description" : "ReadDatabaseDownloadEncryptedServiceController is a service controller that is used to read and download encrypted persisted data."
-  }, {
-    "name" : "ReadDatabaseDownloadServiceController",
-    "description" : "ReadDatabaseDownloadServiceController is a service controller that is used to read persisted data."
   }, {
     "name" : "OptimizationFAFServiceController",
     "description" : "OptimizationFAFServiceController is a service controller that is used as entry-point for JOpt.TourOptimizer. It runs an optimization in FAF (Fire and Forget) mode. After the optimization is done, the result is persited via an externally provided database."
@@ -52,8 +46,18 @@
           "required" : true
         },
         "responses" : {
-          "401" : {
-            "description" : "Unauthorized Access / License not valid / Limited Endpoint",
+          "200" : {
+            "description" : "Once the optimizer has started, it will return a started signal.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "boolean"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error / A problem occured during Optimization",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -62,18 +66,8 @@
               }
             }
           },
-          "200" : {
-            "description" : "Once the optimizer has started, it will return a started signal.",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Solution"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during Optimization",
+          "401" : {
+            "description" : "Unauthorized Access / License not valid / Limited Endpoint",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -112,8 +106,8 @@
               }
             }
           },
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during Optimization start",
+          "401" : {
+            "description" : "Unauthorized Access / License not valid / Limited Endpoint",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -122,8 +116,8 @@
               }
             }
           },
-          "401" : {
-            "description" : "Unauthorized Access / License not valid / Limited Endpoint",
+          "500" : {
+            "description" : "Internal Server Error / A problem occured during Optimization start",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -182,16 +176,6 @@
           "required" : true
         },
         "responses" : {
-          "504" : {
-            "description" : "Timeout / Optimization took too long",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "200" : {
             "description" : "Once the optimizer has finished the optimization run, it will return an OptimizationConfig JSON that contains the initial definition and the solution.",
             "content" : {
@@ -202,8 +186,8 @@
               }
             }
           },
-          "401" : {
-            "description" : "Unauthorized Access / License not valid / Limited Endpoint",
+          "504" : {
+            "description" : "Timeout / Optimization took too long",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -214,6 +198,16 @@
           },
           "500" : {
             "description" : "Internal Server Error / A problem occured during Optimization",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized Access / License not valid / Limited Endpoint",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -242,18 +236,18 @@
           "required" : true
         },
         "responses" : {
-          "504" : {
-            "description" : "Timeout / Optimization took too long",
+          "200" : {
+            "description" : "Once the optimizer has finished the optimization run, it will return a solution/result JSON.",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "string"
+                  "$ref" : "#/components/schemas/Solution"
                 }
               }
             }
           },
-          "401" : {
-            "description" : "Unauthorized Access / License not valid / Limited Endpoint",
+          "504" : {
+            "description" : "Timeout / Optimization took too long",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -272,12 +266,12 @@
               }
             }
           },
-          "200" : {
-            "description" : "Once the optimizer has finished the optimization run, it will return a solution/result JSON.",
+          "401" : {
+            "description" : "Unauthorized Access / License not valid / Limited Endpoint",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Solution"
+                  "type" : "string"
                 }
               }
             }
@@ -431,16 +425,6 @@
           "required" : true
         },
         "responses" : {
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during requesting status",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "200" : {
             "description" : "Get status triggered by the creator in fire and forget mode.",
             "content" : {
@@ -450,6 +434,16 @@
                   "items" : {
                     "$ref" : "#/components/schemas/JOptOptimizationStatus"
                   }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error / A problem occured during requesting status",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
@@ -597,6 +591,16 @@
           "required" : true
         },
         "responses" : {
+          "500" : {
+            "description" : "Internal Server Error / A problem occured during requesting error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
           "200" : {
             "description" : "Get error triggered by the creator in fire and forget mode.",
             "content" : {
@@ -606,16 +610,6 @@
                   "items" : {
                     "$ref" : "#/components/schemas/JOptOptimizationError"
                   }
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during requesting error",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string"
                 }
               }
             }
@@ -640,22 +634,22 @@
           "required" : true
         },
         "responses" : {
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during requesting solutions",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
           "200" : {
             "description" : "Get encrypted Solutions triggered by the creator in fire and forget mode.",
             "content" : {
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/Solution"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error / A problem occured during requesting solutions",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
                 }
               }
             }
@@ -703,170 +697,6 @@
         }
       }
     },
-    "/api/db/download/downloadZippedSolution" : {
-      "post" : {
-        "tags" : [ "ReadDatabaseDownloadServiceController" ],
-        "summary" : "Download decrypted solution by id and creator. Only works, if connected to a database.",
-        "description" : "Download encrypted solution by creator.",
-        "operationId" : "downloadZippedSolution",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/DatabaseItemSearch"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Get Optimizations triggered by the creator in fire and forget mode.",
-            "content" : {
-              "application/x-bzip2" : {
-                "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during requesting optimizations",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/db/download/downloadZippedOptimization" : {
-      "post" : {
-        "tags" : [ "ReadDatabaseDownloadServiceController" ],
-        "summary" : "Download optimization by id and creator. Only works, if connected to a database.",
-        "description" : "Download optimizations by creator.",
-        "operationId" : "downloadZippedOptimization",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/DatabaseItemSearch"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Get Optimizations triggered by the creator in fire and forget mode.",
-            "content" : {
-              "application/x-bzip2" : {
-                "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during requesting optimizations",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/db/download/downloadEncryptedZippedSolution" : {
-      "post" : {
-        "tags" : [ "ReadDatabaseDownloadEncryptedServiceController" ],
-        "summary" : "Download decrypted solution by id and creator. Only works, if connected to a database.",
-        "description" : "Download encrypted solution by creator.",
-        "operationId" : "downloadEncryptedZippedSolution",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/DatabaseEncryptedItemSearch"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Get Optimizations triggered by the creator in fire and forget mode.",
-            "content" : {
-              "application/x-bzip2" : {
-                "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during requesting optimizations",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/db/download/downloadEncryptedZippedOptimization" : {
-      "post" : {
-        "tags" : [ "ReadDatabaseDownloadEncryptedServiceController" ],
-        "summary" : "Download decrypted optimization by id and creator. Only works, if connected to a database.",
-        "description" : "Download encrypted optimizations by creator.",
-        "operationId" : "downloadEncryptedZippedOptimization",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/DatabaseEncryptedItemSearch"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "Get Optimizations triggered by the creator in fire and forget mode.",
-            "content" : {
-              "application/x-bzip2" : {
-                "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal Server Error / A problem occured during requesting optimizations",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/healthStatus" : {
       "get" : {
         "tags" : [ "healthStatus", "OptimizationHealthController" ],
@@ -874,8 +704,8 @@
         "description" : "Get the health status of this endpoint.",
         "operationId" : "healthStatus",
         "responses" : {
-          "200" : {
-            "description" : "The endpoint is up and running.",
+          "503" : {
+            "description" : "The server is in UNKNOWN, OUT_OF_SERVICE, or DOWN state.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -884,8 +714,8 @@
               }
             }
           },
-          "503" : {
-            "description" : "The server is in UNKNOWN, OUT_OF_SERVICE, or DOWN state.",
+          "200" : {
+            "description" : "The endpoint is up and running.",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1021,12 +851,12 @@
           },
           "minUsage" : {
             "type" : "integer",
-            "description" : "The minUsage",
+            "description" : "The minUsage  of the AbsoluteNodeColorCapacity",
             "format" : "int32"
           },
           "maxUsage" : {
             "type" : "integer",
-            "description" : "The maxUsage",
+            "description" : "The maxUsage  of the AbsoluteNodeColorCapacity",
             "format" : "int32"
           }
         },
@@ -1045,11 +875,6 @@
             },
             "absoluteNodeColorCapacities" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "The absoluteNodeColorCapacities",
               "items" : {
                 "$ref" : "#/components/schemas/AbsoluteNodeColorCapacity"
@@ -1074,11 +899,6 @@
           "properties" : {
             "resources" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "The resources that can be choosen to visit a certain node.",
               "items" : {
                 "$ref" : "#/components/schemas/ResourceWithPriority"
@@ -1144,11 +964,6 @@
         "properties" : {
           "timeDefinitions" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The timeDefinitions describe at which times, what connection should be used.",
             "items" : {
               "$ref" : "#/components/schemas/DateDef"
@@ -1246,11 +1061,6 @@
         "properties" : {
           "buildCoreProperties" : {
             "type" : "object",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "additionalProperties" : {
               "type" : "string",
               "description" : "The buildCoreProperties give information about the library and its version that was used for the optimization run."
@@ -1458,25 +1268,25 @@
             "type" : "boolean",
             "description" : "The onlyScheduledInCompany"
           },
-          "isTimeAdjustableAnchor" : {
+          "isExtendableEnd" : {
             "type" : "boolean",
-            "description" : "The isTimeAdjustableAnchor"
+            "description" : "The isExtendableEnd"
           },
           "isSchedulableAfterWorkingHours" : {
             "type" : "boolean",
             "description" : "The isSchedulableAfterWorkingHours"
           },
-          "isSchedulableBeforeWorkingHours" : {
-            "type" : "boolean",
-            "description" : "The isSchedulableBeforeWorkingHours"
-          },
           "isOverwritingRouteTermination" : {
             "type" : "boolean",
             "description" : "The boolean isOverwritingRouteTermination. Instead of using the default termination element of the route, the geoPillar will be used as so-called endAnchor."
           },
-          "isExtendableEnd" : {
+          "isTimeAdjustableAnchor" : {
             "type" : "boolean",
-            "description" : "The isExtendableEnd"
+            "description" : "The isTimeAdjustableAnchor"
+          },
+          "isSchedulableBeforeWorkingHours" : {
+            "type" : "boolean",
+            "description" : "The isSchedulableBeforeWorkingHours"
           }
         },
         "description" : "The pillarNode"
@@ -1491,11 +1301,6 @@
           "properties" : {
             "resources" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "The list of resources that should NOT visit a certain node.",
               "items" : {
                 "$ref" : "#/components/schemas/ResourceWithPriority"
@@ -1627,21 +1432,13 @@
           "connectionRelatedLateMargin" : {
             "$ref" : "#/components/schemas/ConnectionRelatedLateMargin"
           },
-          "isTimeAdjustableAnchor" : {
+          "isAutoTransformable2StartAnchor" : {
             "type" : "boolean",
-            "description" : "The isTimeAdjustableAnchor"
+            "description" : "The isAutoTransformable2StartAnchor"
           },
           "isSchedulableAfterWorkingHours" : {
             "type" : "boolean",
             "description" : "The isSchedulableAfterWorkingHours"
-          },
-          "isSchedulableBeforeWorkingHours" : {
-            "type" : "boolean",
-            "description" : "The isSchedulableBeforeWorkingHours"
-          },
-          "isAutoTransformable2StartAnchor" : {
-            "type" : "boolean",
-            "description" : "The isAutoTransformable2StartAnchor"
           },
           "isOverwritingRouteStart" : {
             "type" : "boolean",
@@ -1650,6 +1447,14 @@
           "isOverwritingRouteTermination" : {
             "type" : "boolean",
             "description" : "The boolean isOverwritingRouteTermination. Instead of using the default termination element of the route, the geoPillar will be used as so-called endAnchor."
+          },
+          "isTimeAdjustableAnchor" : {
+            "type" : "boolean",
+            "description" : "The isTimeAdjustableAnchor"
+          },
+          "isSchedulableBeforeWorkingHours" : {
+            "type" : "boolean",
+            "description" : "The isSchedulableBeforeWorkingHours"
           },
           "isForcedStayNode" : {
             "type" : "boolean",
@@ -1666,12 +1471,12 @@
             "type" : "integer",
             "format" : "int32"
           },
-          "fuzzyVisit" : {
-            "type" : "boolean"
-          },
           "loadValue" : {
             "type" : "number",
             "format" : "double"
+          },
+          "fuzzyVisit" : {
+            "type" : "boolean"
           },
           "request" : {
             "type" : "boolean"
@@ -1699,17 +1504,17 @@
         "required" : [ "typeName" ],
         "type" : "object",
         "properties" : {
-          "maximalIndividualLoadCapacity" : {
-            "type" : "number",
-            "format" : "double"
+          "loadPickupTime" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "currentLoad" : {
             "type" : "number",
             "format" : "double"
           },
-          "loadPickupTime" : {
-            "type" : "integer",
-            "format" : "int64"
+          "maximalIndividualLoadCapacity" : {
+            "type" : "number",
+            "format" : "double"
           },
           "id" : {
             "type" : "string"
@@ -1836,11 +1641,6 @@
         "properties" : {
           "pairs" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The pairs",
             "items" : {
               "$ref" : "#/components/schemas/StringIntegerPair"
@@ -1863,6 +1663,9 @@
           },
           "persistenceSetting" : {
             "$ref" : "#/components/schemas/OptimizationPersistenceSetting"
+          },
+          "pluginSettings" : {
+            "$ref" : "#/components/schemas/PluginSettings"
           },
           "timeOut" : {
             "type" : "string",
@@ -2015,13 +1818,13 @@
                 "$ref" : "#/components/schemas/RouteElementDetail"
               }
             },
-            "isOverlapAllowed" : {
-              "type" : "boolean",
-              "description" : "Do we want to allow overlaps - makes sense if isNeedSameVisitor is false?"
-            },
             "isNeedSameVisitor" : {
               "type" : "boolean",
               "description" : "Do we want the same visitor for all elements of the relation?"
+            },
+            "isOverlapAllowed" : {
+              "type" : "boolean",
+              "description" : "Do we want to allow overlaps - makes sense if isNeedSameVisitor is false?"
             }
           }
         } ]
@@ -2045,16 +1848,16 @@
             "description" : "The location id can relate a node to the connection of another node. For example  the node 'MyFirstNode' and 'MySecondNode' have the same location. It is sufficient to provide the  connection data for 'MyFirstNode' and set the LocationId of 'MySecondNode' to be 'MyFirstNode'",
             "example" : "MyFirstNode"
           },
+          "constraintAliasId" : {
+            "type" : "string",
+            "description" : "The constraintAliasId. If set is used during constraint assessment instead of using the normal id.",
+            "example" : "MyNode"
+          },
           "type" : {
             "$ref" : "#/components/schemas/NodeType"
           },
           "openingHours" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The list of non-overlapping openingHours of the nodes.",
             "items" : {
               "$ref" : "#/components/schemas/OpeningHours"
@@ -2067,11 +1870,6 @@
           },
           "constraints" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The constraints of this node",
             "items" : {
               "$ref" : "#/components/schemas/Constraint"
@@ -2085,11 +1883,6 @@
           },
           "load" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The load",
             "items" : {
               "type" : "number",
@@ -2099,11 +1892,6 @@
           },
           "qualifications" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The qualifications of the node.",
             "items" : {
               "$ref" : "#/components/schemas/Qualification"
@@ -2189,17 +1977,23 @@
             "nullable" : true,
             "default" : false
           },
+          "isStayNode" : {
+            "type" : "boolean",
+            "description" : "The boolean isStayNode defines if a node is capable to be a stay node. A stay node overrides the route termination element of a route, and the route start element of the next route and is  used in the context of 'overnight-stays'.",
+            "nullable" : true,
+            "default" : false
+          },
+          "isWorkNode" : {
+            "type" : "boolean",
+            "description" : "The isWorkNode",
+            "nullable" : true,
+            "default" : true
+          },
           "isWaitOnEarlyArrival" : {
             "type" : "boolean",
             "description" : "The boolean isWaitOnEarlyArrival. In case a Resources reaches a node too early (before the start of the node's OpeningHours), the Resource can either start working direclty (false) or wait for the node to open (true, default).",
             "nullable" : true,
             "default" : true
-          },
-          "isWaitOnEarlyArrivalFirstNode" : {
-            "type" : "boolean",
-            "description" : "The boolean isWaitOnEarlyArrivalFirstNode. In case a Resources reaches the FIRST node of a route too early (before the start of the node's OpeningHours),\"\r\n            + \" the Resource can either start working direclty (true) or wait for the FIRST node to open (false, default). This setting only takes action if isWaitOnEarlyArrival is set to true.",
-            "nullable" : true,
-            "default" : false
           },
           "isOpeningHoursIncludesDuration" : {
             "type" : "boolean",
@@ -2213,15 +2007,9 @@
             "nullable" : true,
             "default" : true
           },
-          "isWorkNode" : {
+          "isWaitOnEarlyArrivalFirstNode" : {
             "type" : "boolean",
-            "description" : "The isWorkNode",
-            "nullable" : true,
-            "default" : true
-          },
-          "isStayNode" : {
-            "type" : "boolean",
-            "description" : "The boolean isStayNode defines if a node is capable to be a stay node. A stay node overrides the route termination element of a route, and the route start element of the next route and is  used in the context of 'overnight-stays'.",
+            "description" : "The boolean isWaitOnEarlyArrivalFirstNode. In case a Resources reaches the FIRST node of a route too early (before the start of the node's OpeningHours),\"\r\n            + \" the Resource can either start working direclty (true) or wait for the FIRST node to open (false, default). This setting only takes action if isWaitOnEarlyArrival is set to true.",
             "nullable" : true,
             "default" : false
           }
@@ -2258,7 +2046,7 @@
           },
           "maxUsage" : {
             "type" : "number",
-            "description" : "The maxUsage",
+            "description" : "The maxUsage of the NodeColorCapacity",
             "format" : "double"
           }
         },
@@ -2277,11 +2065,6 @@
             },
             "nodeColorCapacities" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "The nodeColorCapacities",
               "items" : {
                 "$ref" : "#/components/schemas/NodeColorCapacity"
@@ -2306,11 +2089,6 @@
           },
           "relatedNodeIds" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The relatedNodeIds",
             "items" : {
               "type" : "string",
@@ -2436,11 +2214,6 @@
         "properties" : {
           "properties" : {
             "type" : "object",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "additionalProperties" : {
               "type" : "string",
               "description" : "The properties of the Optimization run. For example, the number of iterations for the Optimization run or the weight for certain Optimization goals can be defined."
@@ -2495,6 +2268,39 @@
           }
         },
         "description" : "The status of the optimization"
+      },
+      "PluginSetting" : {
+        "required" : [ "isActive", "jsonSetting", "pluginName" ],
+        "type" : "object",
+        "properties" : {
+          "pluginName" : {
+            "type" : "string",
+            "description" : "The pluginName"
+          },
+          "jsonSetting" : {
+            "type" : "string",
+            "description" : "The jsonSetting"
+          },
+          "isActive" : {
+            "type" : "boolean",
+            "description" : "The plugin can be deactivated. By default, if a setting exists, the plugin is also activated"
+          }
+        },
+        "description" : "The plugins"
+      },
+      "PluginSettings" : {
+        "required" : [ "plugins" ],
+        "type" : "object",
+        "properties" : {
+          "plugins" : {
+            "type" : "array",
+            "description" : "The plugins",
+            "items" : {
+              "$ref" : "#/components/schemas/PluginSetting"
+            }
+          }
+        },
+        "description" : "The PluginSettings"
       },
       "Position" : {
         "required" : [ "latitude", "longitude" ],
@@ -2627,6 +2433,11 @@
             "description" : "The location id can relate a Resouce to the connection of another resource. See also locationId of Node.",
             "example" : "MySecondResource"
           },
+          "constraintAliasId" : {
+            "type" : "string",
+            "description" : "The constraintAliasId. If set is used during constraint assessment instead of using the normal id.",
+            "example" : "Jane"
+          },
           "type" : {
             "$ref" : "#/components/schemas/ResourceType"
           },
@@ -2635,11 +2446,6 @@
           },
           "workingHours" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The list of non-overlapping workingHours.",
             "items" : {
               "$ref" : "#/components/schemas/WorkingHours"
@@ -2676,11 +2482,6 @@
           },
           "capacity" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The capacity",
             "items" : {
               "type" : "number",
@@ -2690,11 +2491,6 @@
           },
           "initialLoad" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The initialLoad",
             "items" : {
               "type" : "number",
@@ -2704,11 +2500,6 @@
           },
           "minDegratedCapacity" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The minDegratedCapacity",
             "items" : {
               "type" : "number",
@@ -2718,11 +2509,6 @@
           },
           "capacityDegPerStop" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The capacityDegPerStop",
             "items" : {
               "type" : "number",
@@ -2790,6 +2576,11 @@
             "description" : "The hourCost defines how much arbitrary cost arises per hour scheduled (idling, working, driving).",
             "format" : "double"
           },
+          "productionHourCost" : {
+            "type" : "number",
+            "description" : "The productionHourCost defines how much arbitrary cost arises per hour working.",
+            "format" : "double"
+          },
           "fixCost" : {
             "type" : "number",
             "description" : "The fixCost defines an abstract cost that arrises when this node is visited.",
@@ -2832,11 +2623,6 @@
           },
           "qualifications" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The qualifications of the Resource.",
             "items" : {
               "$ref" : "#/components/schemas/Qualification"
@@ -2872,15 +2658,15 @@
             "example" : 1.5,
             "default" : 1.0
           },
-          "isReductionTimeOnlyUsedForDriving" : {
-            "type" : "boolean",
-            "description" : "The isReductionTimeOnlyUsedForDriving. Use startReductionTimeDefinition instead.",
-            "nullable" : true,
-            "default" : false
-          },
           "isReductionTimeIncludedInTotalWorkingTime" : {
             "type" : "boolean",
             "description" : "The isReductionTimeIncludedInTotalWorkingTime. Use StartReductionTimeIncludeDefinition instead",
+            "nullable" : true,
+            "default" : false
+          },
+          "isReductionTimeOnlyUsedForDriving" : {
+            "type" : "boolean",
+            "description" : "The isReductionTimeOnlyUsedForDriving. Use startReductionTimeDefinition instead.",
             "nullable" : true,
             "default" : false
           }
@@ -2998,11 +2784,6 @@
           },
           "nodes" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The list of nodes",
             "items" : {
               "$ref" : "#/components/schemas/Node"
@@ -3010,11 +2791,6 @@
           },
           "resources" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The list of resoruces",
             "items" : {
               "$ref" : "#/components/schemas/Resource"
@@ -3022,11 +2798,6 @@
           },
           "nodeRelations" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The list of relations",
             "items" : {
               "$ref" : "#/components/schemas/NodeRelation"
@@ -3034,11 +2805,6 @@
           },
           "elementConnections" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The list of connections",
             "items" : {
               "$ref" : "#/components/schemas/ElementConnection"
@@ -3058,7 +2824,7 @@
           }
         },
         "example" : {
-          "ident" : "JOpt-Run-1683816982743",
+          "ident" : "JOpt-Run-1706092474875",
           "nodes" : [ {
             "id" : "Koeln",
             "type" : {
@@ -3159,6 +2925,8 @@
               "JOpt.AutoFilter.LateArrivalMargin" : "0",
               "JOpt.AutoFilter.RouteDistanceExceedMargin" : "0",
               "JOpt.AutoFilter.WorkingHoursExceedMargin" : "0",
+              "JOpt.AutoFilter.afterFilteringResult" : "FALSE",
+              "JOpt.AutoFilter.beforeFilteringResult" : "FALSE",
               "JOpt.AutoFilter.canDisableNodeProtection" : "TRUE",
               "JOpt.AutoFilter.collectivePenalization.maxImportance" : "5",
               "JOpt.AutoFilter.tryAvoidSplittingJoinedClusters" : "FALSE",
@@ -3174,6 +2942,9 @@
               "JOpt.CapacityDegradation.TreatSameLocationsAsOne" : "FALSE",
               "JOpt.Clustering.AutoZoneCodeClusters" : "FALSE",
               "JOpt.Clustering.AutoZoneCodeClusters.isHard" : "FALSE",
+              "JOpt.Clustering.JointVisitDuration.doUseDistanceDivider" : "FALSE",
+              "JOpt.Clustering.MaxDistanceUtilization" : "200.0",
+              "JOpt.Clustering.MaxDurationUtilization" : "80.0",
               "JOpt.Clustering.ReassignOrphanedNodes" : "TRUE",
               "JOpt.Clustering.ResourceDutyHoursSplitValue" : "10",
               "JOpt.Clustering.ResourceSplitValue" : "30",
@@ -3195,6 +2966,8 @@
               "JOpt.Multicore" : "1",
               "JOpt.NumCPUCores" : "4",
               "JOpt.PerformanceMode" : "FALSE",
+              "JOpt.PillarDropper.AllowRescheduleMaximalRouteDistanceExceeded" : "TRUE",
+              "JOpt.PillarDropper.AllowRescheduleWorkingHoursExceeded" : "TRUE",
               "JOpt.PlausibilityGuard.PropertyChecker.Active" : "TRUE",
               "JOpt.PropertyChecker.ShowWarnings" : "TRUE",
               "JOpt.SelectiveAutoFilter" : "FALSE",
@@ -3250,50 +3023,55 @@
           },
           "coreBuildOptions" : {
             "buildCoreProperties" : {
-              "jopt.core.maven-surefire-plugin.version" : "3.0.0-M7",
-              "jopt.core.datafactory.version" : "0.8",
-              "jopt.core.jopt.version.number" : "7.5.1",
-              "jopt.core.commons-compress.version" : "1.22",
-              "jopt.core.jackson-databind.version" : "2.14.1",
-              "jopt.core.jackson-datatype-jsr310.version" : "2.14.1",
-              "jopt.core.build.time.utc" : "2023-05-11T07:32:26Z",
-              "jopt.core.testng.version" : "7.5",
-              "jopt.core.properties-maven-plugin.version" : "1.1.0",
-              "jopt.core.jackson-datatype-guava.version" : "2.14.1",
-              "jopt.core.unit-ri.version" : "1.0.3",
-              "jopt.core.value.version" : "2.9.2",
-              "jopt.core.poi.version" : "5.2.3",
-              "jopt.core.commons-lang3.version" : "3.12.0",
-              "jopt.core.maven.test.skip" : "false",
-              "jopt.core.jackson-module-parameter-names.version" : "2.14.1",
-              "jopt.core.jackson-datatype-jdk8.version" : "2.14.1",
-              "jopt.core.maven.compiler.source" : "1.8",
-              "jopt.core.maven-shade-plugin.version" : "3.4.1",
-              "jopt.core.bson.version" : "4.8.0",
+              "jopt.core.maven-surefire-plugin.version" : "3.2.2",
+              "jopt.core.jopt.version.number" : "7.5.1-j17",
+              "jopt.core.jackson-databind.version" : "2.16.1",
+              "jopt.core.testng.version" : "7.8.0",
+              "jopt.core.proguard.core.version" : "9.1.0",
+              "jopt.core.jackson-datatype-guava.version" : "2.16.1",
+              "jopt.core.jackson-datatype-jdk8.version" : "2.16.1",
+              "jopt.core.maven-shade-plugin.version" : "3.5.1",
+              "jopt.core.bson.version" : "4.11.1",
               "jopt.core.wagon-maven-plugin.version" : "2.0.2",
-              "jopt.core.maven-deploy-plugin.version" : "3.0.0",
+              "jopt.core.maven-deploy-plugin.version" : "3.1.1",
               "jopt.core.commons-math3.version" : "3.6.1",
-              "jopt.core.guava.version" : "31.1-jre",
+              "jopt.core.maven.compiler.target" : "17",
               "jopt.core.jacoco-maven-plugin.version" : "0.8.8",
-              "jopt.core.maven.compiler.target" : "1.8",
-              "jopt.core.swagger-annotations.version" : "2.2.7",
-              "jopt.core.license-maven-plugin.version" : "2.0.0",
               "jopt.core.unit-api.version" : "2.1",
               "jopt.core.jopt.version.postfix" : "-SNAPSHOT",
               "jopt.core.project.build.sourceEncoding" : "cp1252",
               "jopt.core.wagon-ssh.version" : "3.5.2",
-              "jopt.core.javafaker.version" : "1.0.2",
               "jopt.core.git-commit-id-plugin.version" : "4.9.10",
-              "jopt.core.poi-ooxml.version" : "5.2.3",
-              "jopt.core.maven-javadoc-plugin.version" : "3.4.1",
+              "jopt.core.maven-javadoc-plugin.version" : "3.6.3",
+              "jopt.core.log4j-core.version" : "2.22.1",
+              "jopt.core.maven-source-plugin.version" : "3.3.0",
+              "jopt.core.spring-data-mongodb.version" : "4.2.0",
+              "jopt.core.datafactory.version" : "0.8",
+              "jopt.core.java.version.target" : "17",
+              "jopt.core.commons-compress.version" : "1.25.0",
+              "jopt.core.jackson-datatype-jsr310.version" : "2.16.1",
+              "jopt.core.build.time.utc" : "2024-01-24T09:18:09Z",
+              "jopt.core.java.version.source" : "17",
+              "jopt.core.properties-maven-plugin.version" : "1.1.0",
+              "jopt.core.unit-ri.version" : "1.0.3",
+              "jopt.core.value.version" : "2.10.0",
+              "jopt.core.poi.version" : "5.2.5",
+              "jopt.core.commons-lang3.version" : "3.14.0",
+              "jopt.core.maven.test.skip" : "false",
+              "jopt.core.jackson-module-parameter-names.version" : "2.16.1",
+              "jopt.core.maven.compiler.source" : "17",
+              "jopt.core.guava.version" : "33.0.0-jre",
+              "jopt.core.swagger-annotations.version" : "2.2.20",
+              "jopt.core.license-maven-plugin.version" : "2.0.0",
+              "jopt.core.jts-core.version" : "1.19.0",
+              "jopt.core.javafaker.version" : "1.0.2",
+              "jopt.core.poi-ooxml.version" : "5.2.5",
               "jopt.core.hamcrest.version" : "2.2",
-              "jopt.core.maven-compiler-plugin.version" : "3.10.1",
+              "jopt.core.maven-compiler-plugin.version" : "3.12.1",
               "jopt.core.proguard-maven-plugin.version" : "2.6.0",
-              "jopt.core.log4j-core.version" : "2.19.0",
-              "jopt.core.rxjava.version" : "3.1.5",
-              "jopt.core.maven-source-plugin.version" : "3.2.1",
-              "jopt.core.wagon-ftp.version" : "3.5.2",
-              "jopt.core.spring-data-mongodb.version" : "3.4.6"
+              "jopt.core.proguard.base.version" : "7.4.1",
+              "jopt.core.rxjava.version" : "3.1.8",
+              "jopt.core.wagon-ftp.version" : "3.5.2"
             }
           },
           "extension" : {
@@ -3321,6 +3099,13 @@
                   "saveError" : true
                 }
               }
+            },
+            "pluginSettings" : {
+              "plugins" : [ {
+                "pluginName" : "QunatumSingleTSPDwaveConstructionPlugin",
+                "jsonSetting" : "{\"calculationSetup\":{\"lagrange\":30.0,\"printBestResult\":true,\"printQubo\":true},\"endpointSetup\":{\"endpoint\":\"http://127.0.0.1/qubo\",\"isDummyResponse\":false},\"solverProps\":{\"solver\":1,\"token\":\"Z303-655527057553f75564b5fb1e51b614d4ed789c06\",\"read\":1000,\"solverident\":\"\",\"label\":\"myTestOpti_newQ_\",\"timelimit\":10}}\r\n",
+                "isActive" : true
+              } ]
             },
             "timeOut" : "PT5M"
           }
@@ -3371,11 +3156,6 @@
           },
           "optimizableElementIds" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The optimizableElementIds. The list of optimizable elements that are part of the route.",
             "items" : {
               "type" : "string",
@@ -3384,11 +3164,6 @@
           },
           "nonOptimizableElementIds" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The nonOptimizableElementIds. The list of non-optimizable elements that are part of the route.",
             "items" : {
               "type" : "string",
@@ -3397,11 +3172,6 @@
           },
           "optionalOptimizableElementIds" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The optionalOptimizableElementIds. The list of optional elements that are part of the route.",
             "items" : {
               "type" : "string",
@@ -3410,11 +3180,6 @@
           },
           "pillarElementIds" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The pillarElementIds. The list of pillar elements that are part of the route.",
             "items" : {
               "type" : "string",
@@ -3423,11 +3188,6 @@
           },
           "elementDetails" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The elementDetails. The list of details describing the route schedule.",
             "items" : {
               "$ref" : "#/components/schemas/RouteElementDetail"
@@ -3456,11 +3216,6 @@
             "description" : "The additionalRouteStartOffset",
             "format" : "int64"
           },
-          "isFinalized" : {
-            "type" : "boolean",
-            "description" : "The isFinalized. Describes if a route was undergoing finalization.",
-            "example" : false
-          },
           "isInactive" : {
             "type" : "boolean",
             "description" : "The isInactive boolean describes if a route is deactivated.",
@@ -3469,6 +3224,11 @@
           "isLockedDown" : {
             "type" : "boolean",
             "description" : "The isLockedDown. Describes if a route was undergoing lockdown.",
+            "example" : false
+          },
+          "isFinalized" : {
+            "type" : "boolean",
+            "description" : "The isFinalized. Describes if a route was undergoing finalization.",
             "example" : false
           }
         },
@@ -3646,11 +3406,6 @@
           },
           "routeViolations" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The routeViolations. Violations that occur on route level. For example, overtime, overdistance etc.",
             "items" : {
               "$ref" : "#/components/schemas/Violation"
@@ -3673,11 +3428,6 @@
         "properties" : {
           "trips" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "Trips representing the route.",
             "items" : {
               "$ref" : "#/components/schemas/ResourceTrip"
@@ -3772,7 +3522,7 @@
         } ]
       },
       "SimpleResourceDepot" : {
-        "required" : [ "typeName" ],
+        "required" : [ "maximalUnitMatchedCapacity", "typeName" ],
         "type" : "object",
         "allOf" : [ {
           "$ref" : "#/components/schemas/IResourceDepot"
@@ -3781,21 +3531,26 @@
           "properties" : {
             "maximalUnitMatchedCapacity" : {
               "type" : "number",
+              "description" : "The maximal unit matched total capacity of the depot.",
               "format" : "double"
             },
             "capacityUnitMap" : {
               "type" : "object",
               "additionalProperties" : {
                 "type" : "number",
+                "description" : "The capacityUnitMap of the depot.",
                 "format" : "double"
-              }
+              },
+              "description" : "The capacityUnitMap of the depot."
             },
-            "getPerKilometerCostFactorMap" : {
+            "perKilometerCostFactorMap" : {
               "type" : "object",
               "additionalProperties" : {
                 "type" : "integer",
+                "description" : "The perKilometerCostFactorMap of the depot.",
                 "format" : "int32"
-              }
+              },
+              "description" : "The perKilometerCostFactorMap of the depot."
             },
             "typeName" : {
               "type" : "string",
@@ -3807,8 +3562,10 @@
               "type" : "object",
               "additionalProperties" : {
                 "type" : "integer",
+                "description" : "The emptyAtEndOfRouteFactorMap of the depot.",
                 "format" : "int32"
-              }
+              },
+              "description" : "The emptyAtEndOfRouteFactorMap of the depot."
             }
           }
         } ]
@@ -3845,11 +3602,6 @@
           },
           "routes" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The routes of the solution.",
             "items" : {
               "$ref" : "#/components/schemas/Route"
@@ -3882,11 +3634,6 @@
           },
           "unassignedElementIds" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The unassignedElementIds, The ids of the elements that were unassigned during the Optimization run. Either by the AutoFilter or at start up due to conflicting hard-constraints.",
             "items" : {
               "type" : "string",
@@ -3936,11 +3683,6 @@
           },
           "jobViolations" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The jobViolations. The violation that occured on Job level. This does NOT contain individual node violations like lateness etc. Moreover,  it contains violations like relation-constraints between nodes. For example, node 'A' needs to be visited before node 'B' is violated.",
             "items" : {
               "$ref" : "#/components/schemas/Violation"
@@ -4174,11 +3916,6 @@
           "properties" : {
             "typeNames" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "A list of user-provided type-names. A Contraint type name must match to a Qualification type name to result in a violation free solution.",
               "items" : {
                 "type" : "string",
@@ -4204,11 +3941,6 @@
           "properties" : {
             "typeNames" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "A list of user-provided type-names. A Contraint type name must match to a Qualification type name to result in a violation free solution.",
               "items" : {
                 "type" : "string",
@@ -4254,11 +3986,6 @@
           "properties" : {
             "typesWithExpertise" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "The types with expertise",
               "items" : {
                 "$ref" : "#/components/schemas/TypeWithExpertise"
@@ -4288,11 +4015,6 @@
           "properties" : {
             "typesWithExpertise" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "A list of user-provided type-names and expertise levels. A Contraint type-name with its required expertise must be fulfill by the type-with-expertise Qualification to result in a violation free solution.",
               "items" : {
                 "$ref" : "#/components/schemas/TypeWithExpertise"
@@ -4348,11 +4070,6 @@
           "properties" : {
             "zoneCodes" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "The zoneCodes",
               "items" : {
                 "$ref" : "#/components/schemas/UKPostCode"
@@ -4557,25 +4274,20 @@
           },
           "hookElementConnections" : {
             "type" : "array",
-            "properties" : {
-              "empty" : {
-                "type" : "boolean"
-              }
-            },
             "description" : "The list of hook connections",
             "items" : {
               "$ref" : "#/components/schemas/ReducedNodeEdgeConnectorItem"
             }
           },
-          "isClosedRoute" : {
-            "type" : "boolean",
-            "description" : "The isClosedRoute boolean describes if a Resource has to visit the termination element of the Route. By default, the start element and the termination element of a Route is the Resource itself. In case of a closed route, by default, the Resource returns to its original starting location.",
-            "nullable" : true,
-            "default" : true
-          },
           "isAvailableForStay" : {
             "type" : "boolean",
             "description" : "The boolean isAvailableForStay defines if this working hour is allowed to end at an overnight stay.",
+            "nullable" : true,
+            "default" : true
+          },
+          "isClosedRoute" : {
+            "type" : "boolean",
+            "description" : "The isClosedRoute boolean describes if a Resource has to visit the termination element of the Route. By default, the start element and the termination element of a Route is the Resource itself. In case of a closed route, by default, the Resource returns to its original starting location.",
             "nullable" : true,
             "default" : true
           }
@@ -4610,11 +4322,6 @@
           "properties" : {
             "zoneCodes" : {
               "type" : "array",
-              "properties" : {
-                "empty" : {
-                  "type" : "boolean"
-                }
-              },
               "description" : "The zoneCodes",
               "items" : {
                 "$ref" : "#/components/schemas/ZoneNumber"
@@ -4728,9 +4435,44 @@
             "type" : "string",
             "description" : "The unique id",
             "example" : "6274e36cc36712358912bf35"
+          },
+          "sec" : {
+            "$ref" : "#/components/schemas/SecurityHelperItemMetadata"
           }
         },
         "description" : "DatabaseInfoSearchResult model for a serach result"
+      },
+      "SecurityHelperItemMetadata" : {
+        "required" : [ "encAlgo", "iv", "salt", "secretKeyFacAlgo", "secretKeySpecAlgo" ],
+        "type" : "object",
+        "properties" : {
+          "iv" : {
+            "type" : "string",
+            "description" : "The iv vector used for initiailization the encryption as base 64 encoded String.",
+            "example" : "5ma7QWV7rNhHIimS8X2KtA=="
+          },
+          "salt" : {
+            "type" : "string",
+            "description" : "The salt used for initiailization as base 64 encoded String.",
+            "example" : "YCJPJNCeDQW2u2a8Stx4+g=="
+          },
+          "encAlgo" : {
+            "type" : "string",
+            "description" : "The algorithm used for encryption.",
+            "example" : "AES/GCM/NoPadding"
+          },
+          "secretKeyFacAlgo" : {
+            "type" : "string",
+            "description" : "Secret Key Factory algorithm.",
+            "example" : "PBKDF2WithHmacSHA256"
+          },
+          "secretKeySpecAlgo" : {
+            "type" : "string",
+            "description" : "Secret Key Factory algorithm spec.",
+            "example" : "AES"
+          }
+        },
+        "description" : "SecurityHelperItemMetadata model for encrypted data"
       },
       "JOptOptimizationWarning" : {
         "required" : [ "code", "desc", "ident", "message" ],
