@@ -57,7 +57,7 @@ Each of the sections has its README.
 
 # The architecture of the generated REST-Client-API
 
-The C#-REST-Client class files used by the examples of this repository were generated utilizing the <a href="https://openapi-generator.tech/docs/generators/csharp-netcore/" target="_blank">openapi-csharp-netcore Generator</a>  by <a href="https://github.com/OpenAPITools" target="_blank">OpenAPI Tools</a>.
+The C#-REST-Client class files used by the examples of this repository were generated utilizing the <a href="https://openapi-generator.tech/docs/generators/csharp/" target="_blank">openapi-csharp-netcore Generator</a>  by <a href="https://github.com/OpenAPITools" target="_blank">OpenAPI Tools</a>.
 
 For creating the models, we used the containerized version of Open-API-Generator by calling:
 
@@ -99,11 +99,11 @@ You can call (from the main folder):
 	dotnet build
 ```
 
-The call will generate the `OpenApiTools.dll`, `Dna.Utils.dll` and the example-executables (e.g. `TourOptimizerExample.exe`) and will download all dependencies. The target-framework is `netstandard2.0` (for the libraries) and `netcoreapp6.0` (for the executables). You can also use Microsoft Visual Studio and perform the standard solution build process.
+The call will generate the `OpenApiTools.dll`, `Dna.Utils.dll` and the example-executables (e.g. `TourOptimizerExample.exe`) and will download all dependencies. The target-framework is `netstandard2.0` (for the libraries) and `net8.0` (for the executables). You can also use Microsoft Visual Studio and perform the standard solution build process.
  
 ## Run the examples
 
-For example, go to `src\Dna.Example\TourOptimizer\optimize\bin\Debug\netcoreapp6.0\` and call the executable `TourOptimizerExample.exe`. By default, it expects a locally running TourOptimizer at <a href="http://localhost:8081" target="_blank">http://localhost:8081</a>.
+For example, go to `src\Dna.Example\TourOptimizer\optimize\bin\Debug\net8.0\` and call the executable `TourOptimizerExample.exe`. By default, it expects a locally running TourOptimizer at <a href="http://localhost:8081" target="_blank">http://localhost:8081</a>.
 
 
 
