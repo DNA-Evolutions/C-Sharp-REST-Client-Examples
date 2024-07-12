@@ -1,18 +1,19 @@
 # C#-REST-Client-Examples by DNA-Evolutions
 
 
-# Compatibility
-This client can be used with <a href="https://hub.docker.com/r/dnaevolutions/jopt_touroptimizer" target="_blank">JOpt-TourOptimizer Spirng Server</a>
-Compatible Versions:
-- 1.2.6-SNAPSHOT (this version was used to create the models of this repository)
-- 1.2.7-SNAPSHOT (<a href="https://github.com/DNA-Evolutions/Java-REST-Client-Examples/blob/master/src/main/resources/swagger/touroptimizer/spec/touroptimizer_spec.json" target="_blank">Specs</a> )
-
-
 <a href="https://dna-evolutions.com/" target="_blank"><img src="https://docs.dna-evolutions.com/indexres/dna-temp-logo.png" width="110"
 title="DNA-Evolutions" alt="DNA-Evolutions"></a>
 
 
 Containerizing an application helps to use it more conveniently across different platforms and, most importantly, as a microservice. Further, scaling an application becomes more straightforward as various standardized orchestration tools can be utilized. A Microservice can be launched either (locally) or, for example, as a highly-scalable web-micro-service in a Kubernetes cluster.
+
+---
+
+# Compatibility
+This client can be used with <a href="https://hub.docker.com/r/dnaevolutions/jopt_touroptimizer" target="_blank">JOpt-TourOptimizer Spirng Server</a>
+Compatible Versions:
+- 1.2.6-SNAPSHOT (this version was used to create the models of this repository)
+- 1.2.7-SNAPSHOT (<a href="https://github.com/DNA-Evolutions/Java-REST-Client-Examples/blob/master/src/main/resources/swagger/touroptimizer/spec/touroptimizer_spec.json" target="_blank">Specs</a> )
 
 ---
 
