@@ -10,7 +10,7 @@ Containerizing an application helps to use it more conveniently across different
 ---
 
 # Compatibility
-This client can be used with <a href="https://hub.docker.com/r/dnaevolutions/jopt_touroptimizer" target="_blank">JOpt-TourOptimizer Spirng Server</a>
+This client can be used with <a href="https://hub.docker.com/r/dnaevolutions/jopt_touroptimizer" target="_blank">JOpt-TourOptimizer Spring Server</a>
 Compatible Versions:
 - 1.2.6-SNAPSHOT (this version was used to create the models of this repository)
 - 1.2.7-SNAPSHOT (<a href="https://github.com/DNA-Evolutions/Java-REST-Client-Examples/blob/master/src/main/resources/swagger/touroptimizer/spec/touroptimizer_spec.json" target="_blank">Specs</a> )
