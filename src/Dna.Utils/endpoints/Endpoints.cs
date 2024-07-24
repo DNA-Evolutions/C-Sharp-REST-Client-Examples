@@ -15,6 +15,9 @@ namespace Utils
 {
     public static class Endpoints {
     public static string LOCAL_SWAGGER_TOUROPTIMIZER_URL = "http://localhost:8081";
+
+    public static string LOCAL_SWAGGER_TOUROPTIMIZER_FROM_DOCKER_URL = "http://host.docker.internal:8081";
+    
     public static string AZURE_SWAGGER_TOUROPTIMIZER_URL = "https://joptaas.azure-api.net/touroptimizer/v2/";
 
 }

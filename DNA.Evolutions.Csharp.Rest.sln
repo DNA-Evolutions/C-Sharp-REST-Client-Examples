@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourOptimizerSearchFAFExamp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourOptimizerLoadFAFExample", "src\Dna.Example\TourOptimizer\loadFAF\TourOptimizerLoadFAFExample.csproj", "{2261CC91-D9EC-4C07-BBAB-0AB9C59565CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourOptimizerDockerExample", "src\Dna.Example\TourOptimizer\optimize\TourOptimizerDockerExample.csproj", "{1713DFF3-CBC5-49D5-B27B-20F2A74D911F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,10 @@ Global
 		{2261CC91-D9EC-4C07-BBAB-0AB9C59565CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2261CC91-D9EC-4C07-BBAB-0AB9C59565CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2261CC91-D9EC-4C07-BBAB-0AB9C59565CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1713DFF3-CBC5-49D5-B27B-20F2A74D911F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1713DFF3-CBC5-49D5-B27B-20F2A74D911F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1713DFF3-CBC5-49D5-B27B-20F2A74D911F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1713DFF3-CBC5-49D5-B27B-20F2A74D911F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -78,6 +84,7 @@ Global
 		{64A5FCDF-E682-4798-AE05-E4AB1F72440A} = {B0944D60-B2BC-48D8-80B2-DD46785C7490}
 		{F08F631C-E2DC-4BF8-A216-C1D621560832} = {B0944D60-B2BC-48D8-80B2-DD46785C7490}
 		{2261CC91-D9EC-4C07-BBAB-0AB9C59565CC} = {B0944D60-B2BC-48D8-80B2-DD46785C7490}
+		{1713DFF3-CBC5-49D5-B27B-20F2A74D911F} = {B0944D60-B2BC-48D8-80B2-DD46785C7490}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {829D024F-9E13-4F54-8493-3A785C4F6478}
