@@ -102,8 +102,8 @@ Clone this repository and open it, for example, with Visual Code. The `DNA.Evolu
 You can call (from the main folder):
 
 ```bash
-	dotnet restore
-	dotnet build
+dotnet restore
+dotnet build
 ```
 
 The call will generate the `OpenApiTools.dll`, `Dna.Utils.dll` and the example-executables (e.g. `TourOptimizerExample.exe`) and will download all dependencies. The target-framework is `netstandard2.0` (for the libraries) and `net8.0` (for the executables). You can also use Microsoft Visual Studio and perform the standard solution build process.
@@ -123,7 +123,7 @@ You must mount a volume to which the examples of this project are downloaded on 
 Launching a sandbox and mount your current directory ('$PWD') or any other directory you want:
 
 ```
-docker run -it -d --name jopt-py-rest-examples -p 127.0.0.1:8023:8080 -v "$PWD/:/home/coder/project" dnaevolutions/jopt_net_example_server:latest
+docker run -it -d --name jopt-net-rest-examples -p 127.0.0.1:8023:8080 -v "$PWD/:/home/coder/project" dnaevolutions/jopt_net_example_server:latest
 ```
 
 Please wait some time before attempting to login with your browser (1-2 minutes). You can also check the logs of the container. Plugins etc. need to be installed. After your first login,  [OmniSharp](https://github.com/OmniSharp) is installed. This also take some time.
@@ -143,21 +143,21 @@ You can start testing with `TourOptimizerDockerExample.cs` (assuming you are loc
 You can run the `dll` by calling from the [terminal](https://code.visualstudio.com/docs/terminal/basics):
 
 ```bash
-	dotnet /home/coder/project/csharp.rest.examples/src/Dna.Example/TourOptimizer/optimize/bin/Debug/net8.0/TourOptimizerDockerExample.dll
+dotnet /home/coder/project/csharp.rest.examples/src/Dna.Example/TourOptimizer/optimize/bin/Debug/net8.0/TourOptimizerDockerExample.dll
 ```
 
 ### Modify an example
 Modify any `cs` file in `DNA.Example` folder. Afterwards, call:
 
 ```bash
-	dotnet restore
-	dotnet build
+dotnet restore
+dotnet build
 ```
 
 from the [terminal](https://code.visualstudio.com/docs/terminal/basics) and call your modified dll by
 
 ```bash
-	dotnet /home/coder/project/csharp.rest.examples/YOUR_MODIFIED_DLL_PATH
+dotnet /home/coder/project/csharp.rest.examples/YOUR_MODIFIED_DLL_PATH
 ```
 
 ### Common problems: ###
@@ -172,6 +172,14 @@ Unhandled exception. System.AggregateException: One or more errors occurred. (Co
 
 You are trying to connect to a local JOpt server but have not adjusted the endpoint. Remember, the sandbox is a docker container and you need to connect to it via the endpoint `http://host.docker.internal:8081` instead of ~`http://localhost:8081`~. You can run `TourOptimizerDockerExample.cs` from the namespace `Optimize` where `Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_FROM_DOCKER_URL` is used instead of `Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_URL`.
 
+
+- If you see the an error like this:
+
+```
+Build failed
+```
+
+simply try again.
 
 ---
 
