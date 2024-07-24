@@ -1,0 +1,21 @@
+image: maven:3.8.8-eclipse-temurin-17-alpine
+
+pipelines:
+  default:
+    - step:
+        name: Create JOpt NET REST Example Sandbox
+        services:
+          - docker
+        script:
+          - cd ./sandbox/net/
+          - myVersion=1.0 
+          - docker version
+          - docker build -t dnaevolutions/jopt_net_example_server:${myVersion} .
+          - docker tag dnaevolutions/jopt_net_example_server:${myVersion} dnaevolutions/jopt_net_example_server:latest
+          - docker login --username $DOCKERHUB_USER --password $DOCKERHUB_PASS
+          - docker push dnaevolutions/jopt_net_example_server:${myVersion}
+          - docker push dnaevolutions/jopt_net_example_server:latest
+definitions:
+  services:
+    docker:
+      memory: 1024

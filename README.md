@@ -86,19 +86,19 @@ For setting up a local test enviorment with database support, please refer to th
 You can start using our examples:
 
 * [Clone this repository](#clone-this-repository)
-
-
-## Prerequisites
-
-* Dotnet SKD 8.x <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">(link)</a>
-* Working Docker environment for local TourOptimizer instance
+* [Use our sandbox in your browser (Docker required)](#use-our-sandbox-in-your-browser-docker-required)
 
 
 ## Clone this repository
 Clone this repository and open it, for example, with Visual Code. The `DNA.Evolutions.Csharp.Rest.sln` file contains three util-projects that need to be built. In addition, it contains multiple example-projects that will be built.
 
+### Prerequisites
 
-## Build necessary files
+* Dotnet SKD 8.x <a href="https://dotnet.microsoft.com/en-us/download/dotnet/8.0" target="_blank">(link)</a>
+* Working Docker environment for local TourOptimizer instance
+
+
+### Build necessary files
 You can call (from the main folder):
 
 ```bash
@@ -108,9 +108,72 @@ You can call (from the main folder):
 
 The call will generate the `OpenApiTools.dll`, `Dna.Utils.dll` and the example-executables (e.g. `TourOptimizerExample.exe`) and will download all dependencies. The target-framework is `netstandard2.0` (for the libraries) and `net8.0` (for the executables). You can also use Microsoft Visual Studio and perform the standard solution build process.
  
-## Run the examples
+### Run the examples
 
 For example, go to `src\Dna.Example\TourOptimizer\optimize\bin\Debug\net8.0\` and call the executable `TourOptimizerExample.exe`. By default, it expects a locally running TourOptimizer at <a href="http://localhost:8081" target="_blank">http://localhost:8081</a>.
+
+
+## Use our sandbox in your browser (Docker required)
+If you want to get started without the hassle of installing C# and an IDE, we provide a sandbox. The sandbox is based on  [code-server](https://github.com/cdr/code-server) and can be used inside your browser, and the interface itself is based on Visual Code. The sandbox is available via DockerHub ([here](https://hub.docker.com/r/dnaevolutions/jopt_net_example_server)). You have to host the sandbox in your Docker environment (Please provide at least 2-4Gb of Ram and 2 Cores). You can pull the sandbox from our DockerHub account (The Dockerfile for creating the sandbox is included in this repository). The latest version of our examples is cloned by default on launching the Docker container, and you can start testing JOpt-REST right away.
+
+
+### Starting the sandbox and persist your changes
+You must mount a volume to which the examples of this project are downloaded on the container's startup. After re-launching the container, the latest version of our examples is only cloned if the folder is not already existing, keeping your files safe from being overridden.
+
+Launching a sandbox and mount your current directory ('$PWD') or any other directory you want:
+
+```
+docker run -it -d --name jopt-py-rest-examples -p 127.0.0.1:8023:8080 -v "$PWD/:/home/coder/project" dnaevolutions/jopt_net_example_server:latest
+```
+
+Please wait some time before attempting to login with your browser (1-2 minutes). You can also check the logs of the container. Plugins etc. need to be installed. After your first login,  [OmniSharp](https://github.com/OmniSharp) is installed. This also take some time.
+
+### Using the sandbox
+
+After starting the container, you can open [http://localhost:8023/](http://localhost:8023) with your browser and login with the password:
+
+```
+joptrest
+```
+
+### Running an example
+
+You can start testing with `TourOptimizerDockerExample.cs` (assuming you are locally running a JOptTourOptimizer Server at port 8081). The `dll` should be already created on first startup of the container.
+
+You can run the `dll` by calling from the [terminal](https://code.visualstudio.com/docs/terminal/basics):
+
+```bash
+	dotnet /home/coder/project/csharp.rest.examples/src/Dna.Example/TourOptimizer/optimize/bin/Debug/net8.0/TourOptimizerDockerExample.dll
+```
+
+### Modify an example
+Modify any `cs` file in `DNA.Example` folder. Afterwards, call:
+
+```bash
+	dotnet restore
+	dotnet build
+```
+
+from the [terminal](https://code.visualstudio.com/docs/terminal/basics) and call your modified dll by
+
+```bash
+	dotnet /home/coder/project/csharp.rest.examples/YOUR_MODIFIED_DLL_PATH
+```
+
+### Common problems: ###
+
+- If you see the an error like this:
+
+```
+Unhandled exception. System.AggregateException: One or more errors occurred. (Connection refused (localhost:8081))
+ ---> System.Net.Http.HttpRequestException: Connection refused (localhost:8081)
+ ---> System.Net.Sockets.SocketException (111): Connection refused
+```
+
+You are trying to connect to a local JOpt server but have not adjusted the endpoint. Remember, the sandbox is a docker container and you need to connect to it via the endpoint `http://host.docker.internal:8081` instead of ~`http://localhost:8081`~. You can run `TourOptimizerDockerExample.cs` from the namespace `Optimize` where `Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_FROM_DOCKER_URL` is used instead of `Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_URL`.
+
+
+---
 
 
 
@@ -130,4 +193,4 @@ For reading our license agreement and for further information about license plan
 --- 
 
 ## Authors
-A product by [dna-evolutions ](https://www.dna-evolutions.com)&copy;
+A product by [dna-evolutions](https://www.dna-evolutions.com)&copy;
