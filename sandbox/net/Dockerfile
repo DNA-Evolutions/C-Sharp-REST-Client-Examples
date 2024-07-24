@@ -2,17 +2,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /home/coder/project
+
 
 # Clone the GitHub repository
-RUN apt-get update && apt-get install -y git \
-    && git clone https://github.com/DNA-Evolutions/C-Sharp-REST-Client-Examples.git .
-
-# Restore dependencies
-# RUN dotnet restore
-
-# Build the application
-# RUN dotnet publish -c Release -o out
+RUN apt-get update && apt-get install -y git
 
 # Use the official code-server image as the base image for the runtime
 FROM codercom/code-server:4.91.0-debian
@@ -30,13 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
-WORKDIR /app
-
-# Copy the entire application source from the build environment
-COPY --from=build-env /app .
-
-# Change ownership of the /app directory to the coder user
-RUN chown -R coder:coder /app
+WORKDIR /home/coder/project
 
 # Copy entrypoint script for starting code-server and the application
 COPY ./jopt-docker-entrypoint.sh /usr/bin/
@@ -55,20 +43,21 @@ RUN echo 'export PATH="$PATH:/usr/share/dotnet"' >> /home/coder/.bashrc
 RUN echo 'export PATH="$PATH:/usr/share/dotnet"' >> /home/coder/.profile
 
 # Set password for code-server
-ENV PASSWORD=jopt
+ENV PASSWORD=joptrest
 
 # Download and install the C# extension for code-server
 RUN wget https://github.com/muhammadsammy/free-vscode-csharp/releases/download/2.34.12/csharp-platform-neutral-2.34.12.vsix -O csharp.vsix
-#RUN code-server --install-extension csharp.vsix
 
-# Clean up
-#RUN rm csharp.vsix
 
 # Switch back to coder user
 USER coder
-
 RUN code-server --install-extension csharp.vsix
 
+USER root
+# Clean up
+RUN rm csharp.vsix
+
+USER coder
 # Start code-server and bind address
 ENTRYPOINT ["/usr/bin/jopt-docker-entrypoint.sh", "--bind-addr", "0.0.0.0:8080", "."]
 
