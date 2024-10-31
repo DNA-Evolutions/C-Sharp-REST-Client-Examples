@@ -22,6 +22,42 @@ namespace Utils
     public static class TestPositionsInput
     {
 
+        public static List<Position> defaultManhattanNodePositions(){
+            
+            List<Position> poss = new List<Position>();
+
+            poss.Add(new Position(40.764279, -73.988988, "Manhattan_0"));
+            poss.Add(new Position(40.761822, -73.968600, "Manhattan_1"));
+            poss.Add(new Position(40.764162, -73.991906, "Manhattan_2"));
+            poss.Add(new Position(40.723670, -73.998738, "Manhattan_3"));
+            poss.Add(new Position(40.796056, -73.967102, "Manhattan_4"));
+            poss.Add(new Position(40.761964, -73.972156, "Manhattan_5"));
+
+            //poss.Add(new Position(40.737567, -74.009090, "Manhattan_6"));
+            //poss.Add(new Position(40.733846, -74.009090, "Manhattan_7"));
+
+             return poss;
+        }
+
+        
+        public static List<Position> defaultNewJerseyCityNodePositions(){
+            
+            List<Position> poss = new List<Position>();
+
+            poss.Add(new Position(40.751788, -74.027374, "NewJerseyCity_0"));
+	        poss.Add(new Position(40.725626, -74.037277, "NewJerseyCity_1"));
+            poss.Add(new Position(40.751106, -74.025960, "NewJerseyCity_2"));
+            poss.Add(new Position(40.759971, -74.023066, "NewJerseyCity_3"));
+            poss.Add(new Position(40.746625, -74.026088, "NewJerseyCity_4"));
+
+            //poss.Add(new Position(40.748330, -74.057274, "NewJerseyCity_5"));
+            //poss.Add(new Position(40.738185, -74.027539, "NewJerseyCity_6"));
+            //poss.Add(new Position(40.740757, -74.026748, "NewJerseyCity_7"));
+
+             return poss;
+        }
+
+
         public static List<Position> defaultSydneyNodePositions()
         {
 
@@ -58,6 +94,20 @@ namespace Utils
             return poss;
 
         }
+
+        public static List<Position> defaultNewYorkPositions()
+        {
+
+            List<Position> poss = new List<Position>();
+
+            poss.Add(new Position(40.742728, -73.870528, "Resource_0"));
+            poss.Add(new Position(40.742728, -73.870528, "Resource_1"));
+            poss.Add(new Position(40.742728, -73.870528, "Resource_2"));
+
+            return poss;
+
+        }
+
 
         public static List<Position> defaultSydneyResourcePositions()
         {

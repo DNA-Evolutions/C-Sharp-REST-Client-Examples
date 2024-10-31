@@ -105,6 +105,24 @@ namespace Utils
 
         }
 
+
+        public static List<Qualification> createZoneQualifcations(int zoneNumberInt)
+        {
+
+            ZoneNumber zoneNumber = new ZoneNumber(zoneNumberInt);
+            ZoneNumberQualification zoneNumberQuali = new ZoneNumberQualification(zoneNumber);
+
+
+            List<Qualification> qualifications =
+            [
+                // Add to list
+                new Qualification(zoneNumberQuali),
+            ];
+
+            return qualifications;
+
+        }
+
         public static List<WorkingHours> defaultTestWorkinghours()
         {
 
@@ -189,6 +207,34 @@ namespace Utils
                 openingHours: defaultTestOpeninghours(),
                 visitDuration: visitDuration,
                 constraints: createNodeTypeConstraints(typeConstraintTitle),
+                load: load,
+                qualifications: qualifications);
+
+            node.Priority = 1;
+
+            return node;
+        }
+
+
+        public static Node defaultGeoNodeWithZoneQualification(Position pos, String id, int zoneNumber)
+        {
+
+            GeoNode geoPart = new GeoNode(pos);
+            geoPart.TypeName = "Geo";
+
+            string visitDuration = "PT30M";
+
+
+            List<Constraint> constrains = new List<Constraint>();
+            List<double> load = new List<double>();
+            List<Qualification> qualifications = createZoneQualifcations(zoneNumber);
+
+            Node node = new Node(id: id,
+                locationId: pos.LocationId,
+                type: geoPart,
+                openingHours: defaultTestOpeninghours(),
+                visitDuration: visitDuration,
+                constraints: constrains,
                 load: load,
                 qualifications: qualifications);
 

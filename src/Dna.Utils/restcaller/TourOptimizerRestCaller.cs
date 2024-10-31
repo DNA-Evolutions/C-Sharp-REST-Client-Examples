@@ -105,7 +105,7 @@ namespace Optimize
 
 
         public RestOptimization optimize(List<Node> nodes, List<Resource> ress,
-            List<ElementConnection> connections, string jsonLicense)
+            List<ElementConnection> connections, string jsonLicense, Dictionary<string, string> properties = null)
         {
 
             if (String.IsNullOrEmpty(jsonLicense))
@@ -115,7 +115,7 @@ namespace Optimize
 
 
             RestOptimization optimization = TestRestOptimizationCreator.defaultTouroptimizerTestInput(nodes, ress,
-                jsonLicense);
+                jsonLicense, properties);
 
             optimization.ElementConnections = connections;
 
@@ -157,7 +157,7 @@ namespace Optimize
 
 
         public Solution optimizeOnlyResult(List<Position> nodePoss, List<Position> ressPoss,
-            List<ElementConnection> connections, String jsonLicense)
+            List<ElementConnection> connections, String jsonLicense, Dictionary<string, string> properties = null)
         {
             List<Node> nodes = new List<Node>();
 
@@ -178,7 +178,7 @@ namespace Optimize
 
 
             RestOptimization optimization = TestRestOptimizationCreator.defaultTouroptimizerTestInput(nodes, ress,
-                jsonLicense);
+                jsonLicense, properties);
 
             //RestOptimization optimization = new RestOptimization();
 
