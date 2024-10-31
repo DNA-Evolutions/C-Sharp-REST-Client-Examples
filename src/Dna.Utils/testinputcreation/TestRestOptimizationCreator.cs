@@ -33,7 +33,7 @@ namespace Utils
     + "	\"key\": \"PUBLIC-bc799ef350fe9841c1354736d8f863cb85bac88cefd19960c1\"\r\n" + "}";
 
         public static RestOptimization defaultTouroptimizerTestInput(List<Node> nodes, List<Resource> ress,
-                string jsonLicense)
+                string jsonLicense, Dictionary<string, string> properties = null)
         {
 
             if (String.IsNullOrEmpty(jsonLicense))
@@ -41,11 +41,15 @@ namespace Utils
                 jsonLicense = TestRestOptimizationCreator.PUBLIC_JSON_LICENSE;
             }
 
+            // Use defaultOptimizationOptionsProperties if properties is null
+            properties ??= defaultOptimizationOptionsProperties();
+            
+
             string ident = "StandardTouroptimizerTestInput";
             string timeOut = "PT2H";
 
             // Options
-            OptimizationOptions optimizationOptions = new OptimizationOptions(properties: defaultOptimizationOptionsProperties());
+            OptimizationOptions optimizationOptions = new OptimizationOptions(properties: properties);
             OptimizationKeySetting keySetting = new OptimizationKeySetting(jsonLicense: jsonLicense);
             JSONConfig extension = new JSONConfig(keySetting: keySetting, timeOut: timeOut);
 
