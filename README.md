@@ -160,6 +160,14 @@ from the [terminal](https://code.visualstudio.com/docs/terminal/basics) and call
 dotnet /home/coder/project/csharp.rest.examples/YOUR_MODIFIED_DLL_PATH
 ```
 
+### Add an example
+
+```bash
+dotnet sln DNA.Evolutions.Csharp.Rest.sln add src/Dna.Example/TourOptimizer/optimize/NewProject.csproj
+
+dotnet build DNA.Evolutions.Csharp.Rest.sln
+```
+
 ### Common problems: ###
 
 - If you see the an error like this:
