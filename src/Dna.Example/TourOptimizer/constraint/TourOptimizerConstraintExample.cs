@@ -75,7 +75,7 @@ namespace Optimize
             List<Resource> ress = new List<Resource>();
             resourcePoss.ForEach(delegate (Position curPos)
             {
-                Resource curRes = Utils.TestElementCreator.defaultCapacityResourceWithQulaificationConstraint(curPos, curPos.LocationId,"Quali");
+                Resource curRes = Utils.TestElementCreator.defaultCapacityResourceWithQualificationConstraint(curPos, curPos.LocationId,"Quali");
                 ress.Add(curRes);
             });
 

@@ -57,7 +57,7 @@ namespace Utils
             return res;
         }
 
-        public static Resource defaultCapacityResourceWithQulaificationConstraint(Position pos, String id, String qualificationDesc)
+        public static Resource defaultCapacityResourceWithQualificationConstraint(Position pos, String id, String qualificationDesc)
         {
 
             CapacityResource type = new CapacityResource();
@@ -80,12 +80,12 @@ namespace Utils
                 initialLoad: initialLoad,
                 minDegratedCapacity: minDegratedCapacity,
                 capacityDegPerStop: capacityDegPerStop,
-                qualifications: createQualifcations(qualificationDesc));
+                qualifications: createTypeQualifcations(qualificationDesc));
 
             return res;
         }
 
-        public static List<Qualification> createQualifcations(string exampleQuali)
+        public static List<Qualification> createTypeQualifcations(string exampleQuali)
         {
 
             List<Qualification> qualifications = new List<Qualification>();
