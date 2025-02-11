@@ -105,7 +105,7 @@ namespace Optimize
 
 
         public RestOptimization optimize(List<Node> nodes, List<Resource> ress,
-            List<ElementConnection> connections, string jsonLicense, Dictionary<string, string> properties = null)
+            List<ElementConnection> connections, string jsonLicense, Dictionary<string, string>? properties = null)
         {
 
             if (String.IsNullOrEmpty(jsonLicense))
@@ -157,7 +157,7 @@ namespace Optimize
 
 
         public Solution optimizeOnlyResult(List<Position> nodePoss, List<Position> ressPoss,
-            List<ElementConnection> connections, String jsonLicense, Dictionary<string, string> properties = null)
+            List<ElementConnection> connections, String jsonLicense, Dictionary<string, string>? properties = null)
         {
             List<Node> nodes = new List<Node>();
 
@@ -310,7 +310,7 @@ namespace Optimize
 
         public void attachToStreams()
         {
-            System.Threading.Tasks.Task<bool> startedTask = this.geoOptimizerApi.RunStartedSginalAsync();
+            System.Threading.Tasks.Task<bool> startedTask = this.geoOptimizerApi.RunStartedSignalAsync();
 
             startedTask.ContinueWith(task =>
             {

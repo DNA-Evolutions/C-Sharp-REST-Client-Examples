@@ -1,4 +1,4 @@
-image: maven:3.8.8-eclipse-temurin-17-alpine
+image: maven:3.9.9-eclipse-temurin-17-alpine
 
 pipelines:
   default:
@@ -8,7 +8,7 @@ pipelines:
           - docker
         script:
           - cd ./sandbox/net/
-          - myVersion=1.0 
+          - myVersion=1.1 
           - docker version
           - docker build -t dnaevolutions/jopt_net_example_server:${myVersion} .
           - docker tag dnaevolutions/jopt_net_example_server:${myVersion} dnaevolutions/jopt_net_example_server:latest

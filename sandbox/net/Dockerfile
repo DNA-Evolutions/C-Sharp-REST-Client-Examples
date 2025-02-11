@@ -9,7 +9,7 @@ WORKDIR /home/coder/project
 RUN apt-get update && apt-get install -y git
 
 # Use the official code-server image as the base image for the runtime
-FROM codercom/code-server:4.91.0-debian
+FROM codercom/code-server:4.96.4-debian
 
 # Switch to root user to install .NET runtime dependencies
 USER root
@@ -46,7 +46,7 @@ RUN echo 'export PATH="$PATH:/usr/share/dotnet"' >> /home/coder/.profile
 ENV PASSWORD=joptrest
 
 # Download and install the C# extension for code-server
-RUN wget https://github.com/muhammadsammy/free-vscode-csharp/releases/download/2.34.12/csharp-platform-neutral-2.34.12.vsix -O csharp.vsix
+RUN wget https://github.com/muhammadsammy/free-vscode-csharp/releases/download/2.61.28/csharp-platform-neutral-2.61.28.vsix -O csharp.vsix
 
 
 # Switch back to coder user

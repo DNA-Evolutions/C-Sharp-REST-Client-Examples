@@ -12,8 +12,7 @@ Containerizing an application helps to use it more conveniently across different
 # Compatibility
 This client can be used with <a href="https://hub.docker.com/r/dnaevolutions/jopt_touroptimizer" target="_blank">JOpt-TourOptimizer Spring Server</a>
 Compatible Versions:
-- 1.2.6-SNAPSHOT (this version was used to create the models of this repository)
-- 1.2.7-SNAPSHOT (<a href="https://github.com/DNA-Evolutions/Java-REST-Client-Examples/blob/master/src/main/resources/swagger/touroptimizer/spec/touroptimizer_spec.json" target="_blank">Specs</a> )
+- 1.3.0-SNAPSHOT (<a href="https://github.com/DNA-Evolutions/Java-REST-Client-Examples/blob/master/src/main/resources/swagger/touroptimizer/spec/touroptimizer_spec.json" target="_blank">Specs</a>)
 
 ---
 
@@ -69,7 +68,7 @@ The C#-REST-Client class files used by the examples of this repository were gene
 For creating the models, we used the containerized version of Open-API-Generator by calling:
 
 ```xml
-docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate  -i '/local/swagger/touroptimizer/spec/touroptimizer_spec.json' -g csharp -o /local/generated/dna-csharp-models --library=httpclient
+docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate  -i '/local/swagger/touroptimizer/spec/touroptimizer_spec.json' -g csharp -o /local/generated/dna-csharp-models --library=httpclient --additional-properties=targetFramework=net8.0
 ```
 
 where `${PWD}` needs to be adjusted to find the Open-API-docs under `/local/swagger/touroptimizer/spec/touroptimizer_spec.json` when mounting the volume `${PWD}` into `/local`. Calling the command will generate the folders `/Org.OpenApiTools` and `/Org.OpenApiTools.Test` that are also part of this repository. You can find the `touroptimizer_spec.json` <a href="https://github.com/DNA-Evolutions/C-Sharp-REST-Client-Examples/blob/master/res/swagger/touroptimizer/spec/touroptimizer_spec.json" target="_blank">here</a>.
