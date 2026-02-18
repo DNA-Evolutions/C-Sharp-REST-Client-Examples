@@ -9,7 +9,7 @@ WORKDIR /home/coder/project
 RUN apt-get update && apt-get install -y git
 
 # Use the official code-server image as the base image for the runtime
-FROM codercom/code-server:4.96.4-debian
+FROM codercom/code-server:4.109.2-debian
 
 # Switch to root user to install .NET runtime dependencies
 USER root
