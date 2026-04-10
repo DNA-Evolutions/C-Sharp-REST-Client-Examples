@@ -6,7 +6,7 @@
  * %%
  * This file is subject to the terms and conditions defined in file 'LICENSE.md',
  * which is part of this repository.
- * 
+ *
  * If not, see <https://www.dna-evolutions.com/agb-conditions-and-terms/>.
  * #L%
  */
@@ -19,16 +19,26 @@ using System.Collections.Generic;
 
 namespace Optimize
 {
+    /// <summary>
+    /// Example demonstrating a basic synchronous optimization using the JOpt TourOptimizer REST API.
+    /// Creates default Sydney node and resource positions, runs the optimization, and prints the result as JSON.
+    /// Optionally saves the result to a JSON file.
+    /// </summary>
     public class TourOptimizerExample
     {
 
+        /// <summary>
+        /// Entry point. Configures the TourOptimizer client (local or Azure), runs a synchronous
+        /// optimization with default Sydney positions, and outputs the result as JSON.
+        /// </summary>
+        /// <param name="args">Command-line arguments (not used).</param>
         public static void Main(string[] args)
         {
 
             /*
-             * 
+             *
              * Modify me
-             * 
+             *
              */
             Boolean isAzureCall = !true; // Make sure you have a local docker container running at Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_URL
 

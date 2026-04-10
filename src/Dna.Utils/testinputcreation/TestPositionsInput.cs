@@ -6,7 +6,7 @@
  * %%
  * This file is subject to the terms and conditions defined in file 'LICENSE.md',
  * which is part of this repository.
- * 
+ *
  * If not, see <https://www.dna-evolutions.com/agb-conditions-and-terms/>.
  * #L%
  */
@@ -19,11 +19,21 @@ using Org.OpenAPITools.Model;
 namespace Utils
 {
 
+    /// <summary>
+    /// Provides predefined sets of geographic <see cref="Position"/> instances for use in
+    /// test and example optimization scenarios. Includes positions for Sydney (Australia)
+    /// and New York area (Manhattan, New Jersey City) locations.
+    /// </summary>
     public static class TestPositionsInput
     {
 
+        /// <summary>
+        /// Returns node positions located in Manhattan, New York.
+        /// Used in zone-travel optimization examples together with <see cref="defaultNewJerseyCityNodePositions"/>.
+        /// </summary>
+        /// <returns>A list of 6 <see cref="Position"/> instances in Manhattan.</returns>
         public static List<Position> defaultManhattanNodePositions(){
-            
+
             List<Position> poss = new List<Position>();
 
             poss.Add(new Position(40.764279, -73.988988, "Manhattan_0"));
@@ -39,9 +49,14 @@ namespace Utils
              return poss;
         }
 
-        
+
+        /// <summary>
+        /// Returns node positions located in New Jersey City.
+        /// Used in zone-travel optimization examples together with <see cref="defaultManhattanNodePositions"/>.
+        /// </summary>
+        /// <returns>A list of 5 <see cref="Position"/> instances in New Jersey City.</returns>
         public static List<Position> defaultNewJerseyCityNodePositions(){
-            
+
             List<Position> poss = new List<Position>();
 
             poss.Add(new Position(40.751788, -74.027374, "NewJerseyCity_0"));
@@ -58,6 +73,11 @@ namespace Utils
         }
 
 
+        /// <summary>
+        /// Returns node positions along a route near Sydney, Australia.
+        /// This is the default node set used by most optimization examples.
+        /// </summary>
+        /// <returns>A list of 5 <see cref="Position"/> instances near Sydney.</returns>
         public static List<Position> defaultSydneyNodePositions()
         {
 
@@ -68,7 +88,7 @@ namespace Utils
             poss.Add(new Position(-34.051988, 150.71981, "Node_2"));
             poss.Add(new Position(-34.04213, 150.729568, "Node_3"));
             poss.Add(new Position(-34.042063, 150.739632, "Node_4"));
-           
+
            /* poss.Add(new Position(-34.041006, 150.779042, "Node_5"));
             poss.Add(new Position(-34.042611, 150.800852, "Node_6"));
             poss.Add(new Position(-34.042334, 150.830416, "Node_7"));
@@ -95,6 +115,12 @@ namespace Utils
 
         }
 
+        /// <summary>
+        /// Returns resource starting positions in Queens, New York.
+        /// Used by the zone-travel example with Manhattan and New Jersey City nodes.
+        /// All three resources share the same starting location.
+        /// </summary>
+        /// <returns>A list of 3 <see cref="Position"/> instances in Queens, New York.</returns>
         public static List<Position> defaultNewYorkPositions()
         {
 
@@ -109,6 +135,11 @@ namespace Utils
         }
 
 
+        /// <summary>
+        /// Returns resource starting positions near Sydney, Australia.
+        /// This is the default resource set used by most optimization examples.
+        /// </summary>
+        /// <returns>A list of 4 <see cref="Position"/> instances near Sydney.</returns>
         public static List<Position> defaultSydneyResourcePositions()
         {
 

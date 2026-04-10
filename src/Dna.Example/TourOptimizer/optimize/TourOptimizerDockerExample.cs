@@ -6,7 +6,7 @@
  * %%
  * This file is subject to the terms and conditions defined in file 'LICENSE.md',
  * which is part of this repository.
- * 
+ *
  * If not, see <https://www.dna-evolutions.com/agb-conditions-and-terms/>.
  * #L%
  */
@@ -19,16 +19,26 @@ using System.Collections.Generic;
 
 namespace Optimize
 {
+    /// <summary>
+    /// Example demonstrating a synchronous optimization when the client itself runs inside a Docker container.
+    /// Uses <see cref="Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_FROM_DOCKER_URL"/> (<c>host.docker.internal</c>)
+    /// to reach a TourOptimizer server running on the Docker host.
+    /// </summary>
     public class TourOptimizerDockerExample
     {
 
+        /// <summary>
+        /// Entry point. Configures the TourOptimizer client with the Docker-internal host URL,
+        /// runs a synchronous optimization with default Sydney positions, and outputs the result as JSON.
+        /// </summary>
+        /// <param name="args">Command-line arguments (not used).</param>
         public static void Main(string[] args)
         {
 
             /*
-             * 
+             *
              * Modify me
-             * 
+             *
              */
             Boolean isAzureCall = !true; // Make sure you have a local docker container running at Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_URL
 

@@ -6,7 +6,7 @@
  * %%
  * This file is subject to the terms and conditions defined in file 'LICENSE.md',
  * which is part of this repository.
- * 
+ *
  * If not, see <https://www.dna-evolutions.com/agb-conditions-and-terms/>.
  * #L%
  */
@@ -19,16 +19,27 @@ using System.Collections.Generic;
 
 namespace Optimize
 {
+    /// <summary>
+    /// Example demonstrating zone-travel optimization. Nodes in Manhattan (zone 1) and
+    /// New Jersey City (zone 2) are assigned <see cref="ZoneNumberQualification"/> values.
+    /// The optimizer penalizes routes that cross zone boundaries, encouraging resources
+    /// to serve nodes within the same zone.
+    /// </summary>
     public class TourOptimizerZoneTravelExample
     {
 
+        /// <summary>
+        /// Entry point. Creates Manhattan and New Jersey City nodes with zone qualifications,
+        /// configures zone-crossing penalty properties, runs the optimization, and outputs the result.
+        /// </summary>
+        /// <param name="args">Command-line arguments (not used).</param>
         public static void Main(string[] args)
         {
 
             /*
-             * 
+             *
              * Modify me
-             * 
+             *
              */
             String myTourOptimizerKey = ""; // Empty key will fallback to TestRestOptimizationCreator.PUBLIC_JSON_LICENSE
             Boolean isSave2JSON = true;
@@ -48,7 +59,7 @@ namespace Optimize
             */
 
             TourOptimizerRestCaller tourOptimizerCaller = new TourOptimizerRestCaller(tourOptimizerUrl: Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_URL);
-            
+
 
             List<Node> nodes = new List<Node>();
 
@@ -96,7 +107,12 @@ namespace Optimize
 
         }
 
-        
+
+        /// <summary>
+        /// Returns optimization algorithm properties with zone-crossing penalty enabled.
+        /// Sets a multiplier of 10x for penalizing routes that cross zone boundaries.
+        /// </summary>
+        /// <returns>A dictionary of property key-value pairs including zone-crossing penalty settings.</returns>
         public static Dictionary<string, string> myOptimizationOptionsProperties()
         {
 

@@ -1,9 +1,9 @@
 /*
  * DNA Evolutions - JOpt.TourOptimizer
  *
- * This is DNA's JOpt.TourOptimizer service. A RESTful Spring Boot application using springdoc-openapi and OpenAPI 3. JOpt.TourOptimizer is a service that delivers route optimization and automatic scheduling features to be easily integrated into any third-party application. JOpt.TourOptimizer encapsulates all necessary optimization functionality and provides a comprehensive REST API that offers a domain-specific optimization interface for the transportation industry. The service is stateless and does not come with graphical user interfaces, map depiction or any databases. These extensions and adjustments are supposed to be introduced by the consumer of the service while integrating it into his/her own application. The service will allow for many suitable adjustments and user-specific settings to adjust the behaviour and optimization goals (e.g. minimizing distance, maximizing resource utilization, etc.) through a comprehensive set of functions. This will enable you to gain control of the complete optimization processes.This service is based on JOpt (7.5.3-j17)
+ * # JOpt.TourOptimizer REST API  ![DNA Evolutions Logo](https://www.dna-evolutions.com/images/dna_logo.png)  JOpt.TourOptimizer is DNA Evolutions' route optimization and scheduling engine for transportation, field service, and resource planning scenarios.  This API is a **reactive Spring WebFlux REST service** with an **OpenAPI 3** contract, designed for integration into third-party systems and for generating typed client SDKs directly from the schema.  - --  ## Endpoint groups  ### Job endpoints (`job`)  The primary integration model for all deployments with a connected database.  Submit an optimization job with `POST /api/v1/jobs` and receive an HTTP 202 response containing a unique `jobId`. Use that jobId to poll for status, progress, warnings, errors, and the final result at any time — no open connection required.  | Endpoint | Description | Availability | |- --|- --|- --| | `POST /api/v1/jobs` | Submit an async optimization job | All deployments | | `GET /api/v1/jobs/{jobId}/status` | Poll job status | All deployments | | `GET /api/v1/jobs/{jobId}/result` | Retrieve full optimization result | All deployments | | `GET /api/v1/jobs/{jobId}/solution` | Retrieve solution payload only | All deployments | | `GET /api/v1/jobs/{jobId}/progress` | Retrieve progress snapshots | All deployments | | `GET /api/v1/jobs/{jobId}/warnings` | Retrieve warning messages | All deployments | | `GET /api/v1/jobs/{jobId}/errors` | Retrieve error messages | All deployments | | `GET /api/v1/jobs/{jobId}/export` | Download result as ZIP archive | All deployments | | `POST /api/v1/jobs/{jobId}/stop` | Send graceful stop signal to a running job | All deployments | | `DELETE /api/v1/jobs/{jobId}` | Delete all persisted data for a job | All deployments | | `POST /api/v1/jobs/search` | Search jobs by metadata criteria | On-premise (free-search enabled) | | `POST /api/v1/jobs/import` | Import a pre-computed result directly | On-premise (import enabled) |  All job endpoints require the `X-Tenant-Id` header, injected by the API gateway. The `jobId` returned at submission is the only token needed for all subsequent reads.  ### Synchronous run endpoints (`optimization`)  Available on on-premise installations with synchronous mode enabled. The client holds the HTTP connection open and receives the result directly in the response body.  | Endpoint | Description | |- --|- --| | `POST /api/v1/runs` | Start a run, return runId immediately (HTTP 202) | | `GET /api/v1/runs/{runId}/result` | Block until run completes, return full result | | `GET /api/v1/runs/{runId}/solution` | Block until run completes, return solution only | | `DELETE /api/v1/runs/{runId}` | Stop the run gracefully | | `GET /api/v1/runs/{runId}/started` | One-shot signal when the run has started |  ### Event stream endpoints (`stream`)  Server-Sent Event streams for monitoring a running synchronous optimization in near real time. Subscribe to one or more streams while a `POST /api/v1/runs` call is in progress.  | Endpoint | Event type | |- --|- --| | `GET /api/v1/runs/{runId}/stream/progress` | Progress percentage and timing | | `GET /api/v1/runs/{runId}/stream/status` | Lifecycle status transitions | | `GET /api/v1/runs/{runId}/stream/warnings` | Non-fatal solver warnings | | `GET /api/v1/runs/{runId}/stream/errors` | Solver error events |  ### Health endpoint (`health`)  | Endpoint | Description | |- --|- --| | `GET /api/v1/health` | Service liveness and readiness |  - --  ## Deployment modes and feature flags  Endpoints that require specific conditions are activated via Spring `@Conditional` annotations and application properties. Endpoints not active in a given deployment are absent from the service entirely and do not appear in the runtime spec.  | Condition | Property / annotation | Effect | |- --|- --|- --| | Database connected | `DatabaseEnabledCondition` | Activates all `job` endpoints | | Sync mode | `SynchControllersEnabledCondition` | Activates `optimization` and `stream` endpoints | | Free search | `DatabaseFreeSearchEnabledCondition` | Activates `POST /api/v1/jobs/search` | | Import | `DatabaseJobImportEnabledCondition` | Activates `POST /api/v1/jobs/import` |  - --  ## Tenant isolation  Every job endpoint is scoped by `X-Tenant-Id`, injected by the API gateway. Persisted documents are tagged with both `jobId` and `tenantId`. A request with a valid `jobId` but a mismatched `tenantId` returns no data. The `jobId` is a UUID v4 (122 bits of randomness) and is not a security credential — security is enforced by the verified `tenantId` from the gateway header.  - --  ## Encryption at rest  Results can be stored encrypted in two modes:  - **CLIENT mode**: key derived from a caller-provided passphrase via PBKDF2.   Pass the same secret in `X-Encryption-Secret` when reading back. - **KMS mode**: server-generated data encryption key (DEK) wrapped by an   external key management service (Azure Key Vault, AWS KMS). Decryption is   transparent to the caller.  The `encrypted` and `sec` fields in `DatabaseInfoSearchResult` indicate which mode was used for each stored result.  - --  ## Client generation  The OpenAPI schema can be used to generate typed clients for any language. The `operationId` values follow `{verb}{Resource}` lowerCamelCase convention (`createJob`, `getJobResult`, `listJobs`, etc.) for predictable generated method names.  - --  This service is based on **JOpt Core (unknown)**. 
  *
- * The version of the OpenAPI document: 1.3.3-SNAPSHOT
+ * The version of the OpenAPI document: 1.3.5-SNAPSHOT
  * Contact: info@dna-evolutions.com
  * Generated by: https://github.com/openapitools/openapi-generator.git
  */
@@ -28,7 +28,7 @@ using OpenAPIDateConverter = Org.OpenAPITools.Client.OpenAPIDateConverter;
 namespace Org.OpenAPITools.Model
 {
     /// <summary>
-    /// The routes of the solution.
+    /// A single route within the optimization solution. Assigns a resource to a sequence of nodes with full scheduling details. Contains the route header (KPIs), start/end elements and positions, lists of optimizable, non-optimizable, optional, and pillar element ids, per-element scheduling details, and route-level flags.
     /// </summary>
     [DataContract(Name = "Route")]
     public partial class Route : IValidatableObject
@@ -90,10 +90,10 @@ namespace Org.OpenAPITools.Model
         /// <param name="pillarLatestEffectiveArrivalOffsetMap">The pillarLatestEffectiveArrivalOffsetMap. A map of additional time offsets for pillar elements. Each pillar has a latest possible arrival. As a route can consist of multiple pillars, the latest arrival at a certain pillar is also a function of  subsequent pillars. This latest arrival may shifted to a later time spot to allow shifitig a pillar around a normal node, even the normal node would fit before the pillar..</param>
         /// <param name="flags">The flags. A list of flags indicating statii like which source finalized a route..</param>
         /// <param name="additionalRouteStartOffset">The additionalRouteStartOffset.</param>
-        /// <param name="isFinalized">The isFinalized. Describes if a route was undergoing finalization..</param>
-        /// <param name="isInactive">The isInactive boolean describes if a route is deactivated..</param>
         /// <param name="isLockedDown">The isLockedDown. Describes if a route was undergoing lockdown..</param>
-        public Route(RouteHeader header = default, int id = default, string resourceId = default, RouteTrip routeTrip = default, DateTime startTime = default, string startElementId = default, Position startPosition = default, string endElementId = default, Position endPosition = default, List<string> optimizableElementIds = default, List<string> nonOptimizableElementIds = default, List<string> optionalOptimizableElementIds = default, List<string> pillarElementIds = default, List<RouteElementDetail> elementDetails = default, Dictionary<string, long> pillarLatestEffectiveArrivalOffsetMap = default, List<FlagsEnum> flags = default, long additionalRouteStartOffset = default, bool isFinalized = default, bool isInactive = default, bool isLockedDown = default)
+        /// <param name="isInactive">The isInactive boolean describes if a route is deactivated..</param>
+        /// <param name="isFinalized">The isFinalized. Describes if a route was undergoing finalization..</param>
+        public Route(RouteHeader header = default, int id = default, string resourceId = default, RouteTrip routeTrip = default, DateTime startTime = default, string startElementId = default, Position startPosition = default, string endElementId = default, Position endPosition = default, List<string> optimizableElementIds = default, List<string> nonOptimizableElementIds = default, List<string> optionalOptimizableElementIds = default, List<string> pillarElementIds = default, List<RouteElementDetail> elementDetails = default, Dictionary<string, long> pillarLatestEffectiveArrivalOffsetMap = default, List<FlagsEnum> flags = default, long additionalRouteStartOffset = default, bool isLockedDown = default, bool isInactive = default, bool isFinalized = default)
         {
             this.Id = id;
             // to ensure "resourceId" is required (not null)
@@ -152,9 +152,9 @@ namespace Org.OpenAPITools.Model
             this.PillarLatestEffectiveArrivalOffsetMap = pillarLatestEffectiveArrivalOffsetMap;
             this.Flags = flags;
             this.AdditionalRouteStartOffset = additionalRouteStartOffset;
-            this.IsFinalized = isFinalized;
-            this.IsInactive = isInactive;
             this.IsLockedDown = isLockedDown;
+            this.IsInactive = isInactive;
+            this.IsFinalized = isFinalized;
         }
 
         /// <summary>
@@ -288,14 +288,14 @@ namespace Org.OpenAPITools.Model
         public long AdditionalRouteStartOffset { get; set; }
 
         /// <summary>
-        /// The isFinalized. Describes if a route was undergoing finalization.
+        /// The isLockedDown. Describes if a route was undergoing lockdown.
         /// </summary>
-        /// <value>The isFinalized. Describes if a route was undergoing finalization.</value>
+        /// <value>The isLockedDown. Describes if a route was undergoing lockdown.</value>
         /*
         <example>false</example>
         */
-        [DataMember(Name = "isFinalized", EmitDefaultValue = true)]
-        public bool IsFinalized { get; set; }
+        [DataMember(Name = "isLockedDown", EmitDefaultValue = true)]
+        public bool IsLockedDown { get; set; }
 
         /// <summary>
         /// The isInactive boolean describes if a route is deactivated.
@@ -308,14 +308,14 @@ namespace Org.OpenAPITools.Model
         public bool IsInactive { get; set; }
 
         /// <summary>
-        /// The isLockedDown. Describes if a route was undergoing lockdown.
+        /// The isFinalized. Describes if a route was undergoing finalization.
         /// </summary>
-        /// <value>The isLockedDown. Describes if a route was undergoing lockdown.</value>
+        /// <value>The isFinalized. Describes if a route was undergoing finalization.</value>
         /*
         <example>false</example>
         */
-        [DataMember(Name = "isLockedDown", EmitDefaultValue = true)]
-        public bool IsLockedDown { get; set; }
+        [DataMember(Name = "isFinalized", EmitDefaultValue = true)]
+        public bool IsFinalized { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -342,9 +342,9 @@ namespace Org.OpenAPITools.Model
             sb.Append("  PillarLatestEffectiveArrivalOffsetMap: ").Append(PillarLatestEffectiveArrivalOffsetMap).Append("\n");
             sb.Append("  Flags: ").Append(Flags).Append("\n");
             sb.Append("  AdditionalRouteStartOffset: ").Append(AdditionalRouteStartOffset).Append("\n");
-            sb.Append("  IsFinalized: ").Append(IsFinalized).Append("\n");
-            sb.Append("  IsInactive: ").Append(IsInactive).Append("\n");
             sb.Append("  IsLockedDown: ").Append(IsLockedDown).Append("\n");
+            sb.Append("  IsInactive: ").Append(IsInactive).Append("\n");
+            sb.Append("  IsFinalized: ").Append(IsFinalized).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }

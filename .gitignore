@@ -361,3 +361,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 temp/
+
+# Claude Code local settings
+.claude/
+
+# Example output files
+OptimizationExportTest.json
+OptimizationZoneNewYorkExportTest.json

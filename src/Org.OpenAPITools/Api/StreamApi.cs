@@ -1,9 +1,9 @@
 /*
  * DNA Evolutions - JOpt.TourOptimizer
  *
- * This is DNA's JOpt.TourOptimizer service. A RESTful Spring Boot application using springdoc-openapi and OpenAPI 3. JOpt.TourOptimizer is a service that delivers route optimization and automatic scheduling features to be easily integrated into any third-party application. JOpt.TourOptimizer encapsulates all necessary optimization functionality and provides a comprehensive REST API that offers a domain-specific optimization interface for the transportation industry. The service is stateless and does not come with graphical user interfaces, map depiction or any databases. These extensions and adjustments are supposed to be introduced by the consumer of the service while integrating it into his/her own application. The service will allow for many suitable adjustments and user-specific settings to adjust the behaviour and optimization goals (e.g. minimizing distance, maximizing resource utilization, etc.) through a comprehensive set of functions. This will enable you to gain control of the complete optimization processes.This service is based on JOpt (7.5.3-j17)
+ * # JOpt.TourOptimizer REST API  ![DNA Evolutions Logo](https://www.dna-evolutions.com/images/dna_logo.png)  JOpt.TourOptimizer is DNA Evolutions' route optimization and scheduling engine for transportation, field service, and resource planning scenarios.  This API is a **reactive Spring WebFlux REST service** with an **OpenAPI 3** contract, designed for integration into third-party systems and for generating typed client SDKs directly from the schema.  - --  ## Endpoint groups  ### Job endpoints (`job`)  The primary integration model for all deployments with a connected database.  Submit an optimization job with `POST /api/v1/jobs` and receive an HTTP 202 response containing a unique `jobId`. Use that jobId to poll for status, progress, warnings, errors, and the final result at any time — no open connection required.  | Endpoint | Description | Availability | |- --|- --|- --| | `POST /api/v1/jobs` | Submit an async optimization job | All deployments | | `GET /api/v1/jobs/{jobId}/status` | Poll job status | All deployments | | `GET /api/v1/jobs/{jobId}/result` | Retrieve full optimization result | All deployments | | `GET /api/v1/jobs/{jobId}/solution` | Retrieve solution payload only | All deployments | | `GET /api/v1/jobs/{jobId}/progress` | Retrieve progress snapshots | All deployments | | `GET /api/v1/jobs/{jobId}/warnings` | Retrieve warning messages | All deployments | | `GET /api/v1/jobs/{jobId}/errors` | Retrieve error messages | All deployments | | `GET /api/v1/jobs/{jobId}/export` | Download result as ZIP archive | All deployments | | `POST /api/v1/jobs/{jobId}/stop` | Send graceful stop signal to a running job | All deployments | | `DELETE /api/v1/jobs/{jobId}` | Delete all persisted data for a job | All deployments | | `POST /api/v1/jobs/search` | Search jobs by metadata criteria | On-premise (free-search enabled) | | `POST /api/v1/jobs/import` | Import a pre-computed result directly | On-premise (import enabled) |  All job endpoints require the `X-Tenant-Id` header, injected by the API gateway. The `jobId` returned at submission is the only token needed for all subsequent reads.  ### Synchronous run endpoints (`optimization`)  Available on on-premise installations with synchronous mode enabled. The client holds the HTTP connection open and receives the result directly in the response body.  | Endpoint | Description | |- --|- --| | `POST /api/v1/runs` | Start a run, return runId immediately (HTTP 202) | | `GET /api/v1/runs/{runId}/result` | Block until run completes, return full result | | `GET /api/v1/runs/{runId}/solution` | Block until run completes, return solution only | | `DELETE /api/v1/runs/{runId}` | Stop the run gracefully | | `GET /api/v1/runs/{runId}/started` | One-shot signal when the run has started |  ### Event stream endpoints (`stream`)  Server-Sent Event streams for monitoring a running synchronous optimization in near real time. Subscribe to one or more streams while a `POST /api/v1/runs` call is in progress.  | Endpoint | Event type | |- --|- --| | `GET /api/v1/runs/{runId}/stream/progress` | Progress percentage and timing | | `GET /api/v1/runs/{runId}/stream/status` | Lifecycle status transitions | | `GET /api/v1/runs/{runId}/stream/warnings` | Non-fatal solver warnings | | `GET /api/v1/runs/{runId}/stream/errors` | Solver error events |  ### Health endpoint (`health`)  | Endpoint | Description | |- --|- --| | `GET /api/v1/health` | Service liveness and readiness |  - --  ## Deployment modes and feature flags  Endpoints that require specific conditions are activated via Spring `@Conditional` annotations and application properties. Endpoints not active in a given deployment are absent from the service entirely and do not appear in the runtime spec.  | Condition | Property / annotation | Effect | |- --|- --|- --| | Database connected | `DatabaseEnabledCondition` | Activates all `job` endpoints | | Sync mode | `SynchControllersEnabledCondition` | Activates `optimization` and `stream` endpoints | | Free search | `DatabaseFreeSearchEnabledCondition` | Activates `POST /api/v1/jobs/search` | | Import | `DatabaseJobImportEnabledCondition` | Activates `POST /api/v1/jobs/import` |  - --  ## Tenant isolation  Every job endpoint is scoped by `X-Tenant-Id`, injected by the API gateway. Persisted documents are tagged with both `jobId` and `tenantId`. A request with a valid `jobId` but a mismatched `tenantId` returns no data. The `jobId` is a UUID v4 (122 bits of randomness) and is not a security credential — security is enforced by the verified `tenantId` from the gateway header.  - --  ## Encryption at rest  Results can be stored encrypted in two modes:  - **CLIENT mode**: key derived from a caller-provided passphrase via PBKDF2.   Pass the same secret in `X-Encryption-Secret` when reading back. - **KMS mode**: server-generated data encryption key (DEK) wrapped by an   external key management service (Azure Key Vault, AWS KMS). Decryption is   transparent to the caller.  The `encrypted` and `sec` fields in `DatabaseInfoSearchResult` indicate which mode was used for each stored result.  - --  ## Client generation  The OpenAPI schema can be used to generate typed clients for any language. The `operationId` values follow `{verb}{Resource}` lowerCamelCase convention (`createJob`, `getJobResult`, `listJobs`, etc.) for predictable generated method names.  - --  This service is based on **JOpt Core (unknown)**. 
  *
- * The version of the OpenAPI document: 1.3.3-SNAPSHOT
+ * The version of the OpenAPI document: 1.3.5-SNAPSHOT
  * Contact: info@dna-evolutions.com
  * Generated by: https://github.com/openapitools/openapi-generator.git
  */
@@ -29,81 +29,131 @@ namespace Org.OpenAPITools.Api
     {
         #region Synchronous Operations
         /// <summary>
-        /// Stream of error. During the optimization run you can obtain optimization errors in percentage by subscribing to this stream
+        /// Emits once the run has transitioned to the running state.
         /// </summary>
         /// <remarks>
-        /// Stream of error
+        /// Returns a single boolean true when the optimizer for the given runId transitions to the running state. Useful for clients that want to begin subscribing to event streams only after the optimizer has actually started.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>bool</returns>
+        bool GetStartedSignal(string runId);
+
+        /// <summary>
+        /// Emits once the run has transitioned to the running state.
+        /// </summary>
+        /// <remarks>
+        /// Returns a single boolean true when the optimizer for the given runId transitions to the running state. Useful for clients that want to begin subscribing to event streams only after the optimizer has actually started.
+        /// </remarks>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>ApiResponse of bool</returns>
+        ApiResponse<bool> GetStartedSignalWithHttpInfo(string runId);
+        /// <summary>
+        /// Stop an active optimization run gracefully.
+        /// </summary>
+        /// <remarks>
+        /// Requests a graceful stop of the run identified by runId. The optimizer finishes its current iteration and emits the best result found so far, which is then returned by the blocking GET result endpoint. Returns 404 if the runId is unknown or already completed.
+        /// </remarks>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>bool</returns>
+        bool StopRun(string runId);
+
+        /// <summary>
+        /// Stop an active optimization run gracefully.
+        /// </summary>
+        /// <remarks>
+        /// Requests a graceful stop of the run identified by runId. The optimizer finishes its current iteration and emits the best result found so far, which is then returned by the blocking GET result endpoint. Returns 404 if the runId is unknown or already completed.
+        /// </remarks>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>ApiResponse of bool</returns>
+        ApiResponse<bool> StopRunWithHttpInfo(string runId);
+        /// <summary>
+        /// SSE stream of optimization errors for a run.
+        /// </summary>
+        /// <remarks>
+        /// Subscribe to receive error events for the run identified by runId. Errors indicate serious problems that may affect result quality.
+        /// </remarks>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>List&lt;JOptOptimizationError&gt;</returns>
-        List<JOptOptimizationError> Error();
+        List<JOptOptimizationError> StreamErrors(string runId);
 
         /// <summary>
-        /// Stream of error. During the optimization run you can obtain optimization errors in percentage by subscribing to this stream
+        /// SSE stream of optimization errors for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of error
+        /// Subscribe to receive error events for the run identified by runId. Errors indicate serious problems that may affect result quality.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>ApiResponse of List&lt;JOptOptimizationError&gt;</returns>
-        ApiResponse<List<JOptOptimizationError>> ErrorWithHttpInfo();
+        ApiResponse<List<JOptOptimizationError>> StreamErrorsWithHttpInfo(string runId);
         /// <summary>
-        /// Stream of progress. During the optimization run you can obtain the optimization progress in percentage and other useful information about the optimization progress by subscribing to this stream
+        /// SSE stream of optimization progress for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of progress
+        /// Subscribe to receive real-time progress updates for the run identified by runId. Each event contains the current progress percentage and timing information.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>List&lt;JOptOptimizationProgress&gt;</returns>
-        List<JOptOptimizationProgress> Progress();
+        List<JOptOptimizationProgress> StreamProgress(string runId);
 
         /// <summary>
-        /// Stream of progress. During the optimization run you can obtain the optimization progress in percentage and other useful information about the optimization progress by subscribing to this stream
+        /// SSE stream of optimization progress for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of progress
+        /// Subscribe to receive real-time progress updates for the run identified by runId. Each event contains the current progress percentage and timing information.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>ApiResponse of List&lt;JOptOptimizationProgress&gt;</returns>
-        ApiResponse<List<JOptOptimizationProgress>> ProgressWithHttpInfo();
+        ApiResponse<List<JOptOptimizationProgress>> StreamProgressWithHttpInfo(string runId);
         /// <summary>
-        /// Stream of status messages. During the optimization run you can obtain the optimization status by subscribing to this stream
+        /// SSE stream of optimization status messages for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of progress
+        /// Subscribe to receive status lifecycle events for the run identified by runId (e.g. STARTED, RUNNING, FINISHED).
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>List&lt;JOptOptimizationStatus&gt;</returns>
-        List<JOptOptimizationStatus> Status();
+        List<JOptOptimizationStatus> StreamStatus(string runId);
 
         /// <summary>
-        /// Stream of status messages. During the optimization run you can obtain the optimization status by subscribing to this stream
+        /// SSE stream of optimization status messages for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of progress
+        /// Subscribe to receive status lifecycle events for the run identified by runId (e.g. STARTED, RUNNING, FINISHED).
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>ApiResponse of List&lt;JOptOptimizationStatus&gt;</returns>
-        ApiResponse<List<JOptOptimizationStatus>> StatusWithHttpInfo();
+        ApiResponse<List<JOptOptimizationStatus>> StreamStatusWithHttpInfo(string runId);
         /// <summary>
-        /// Stream of warning messages. During the optimization run you can obtain optimization warnings by subscribing to this stream
+        /// SSE stream of optimization warnings for a run.
         /// </summary>
         /// <remarks>
-        /// text/event-stream
+        /// Subscribe to receive warning events for the run identified by runId. Warnings indicate non-fatal issues such as unserviceable nodes or soft constraint violations.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>List&lt;JOptOptimizationWarning&gt;</returns>
-        List<JOptOptimizationWarning> Warning();
+        List<JOptOptimizationWarning> StreamWarnings(string runId);
 
         /// <summary>
-        /// Stream of warning messages. During the optimization run you can obtain optimization warnings by subscribing to this stream
+        /// SSE stream of optimization warnings for a run.
         /// </summary>
         /// <remarks>
-        /// text/event-stream
+        /// Subscribe to receive warning events for the run identified by runId. Warnings indicate non-fatal issues such as unserviceable nodes or soft constraint violations.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>ApiResponse of List&lt;JOptOptimizationWarning&gt;</returns>
-        ApiResponse<List<JOptOptimizationWarning>> WarningWithHttpInfo();
+        ApiResponse<List<JOptOptimizationWarning>> StreamWarningsWithHttpInfo(string runId);
         #endregion Synchronous Operations
     }
 
@@ -114,89 +164,143 @@ namespace Org.OpenAPITools.Api
     {
         #region Asynchronous Operations
         /// <summary>
-        /// Stream of error. During the optimization run you can obtain optimization errors in percentage by subscribing to this stream
+        /// Emits once the run has transitioned to the running state.
         /// </summary>
         /// <remarks>
-        /// Stream of error
+        /// Returns a single boolean true when the optimizer for the given runId transitions to the running state. Useful for clients that want to begin subscribing to event streams only after the optimizer has actually started.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of bool</returns>
+        System.Threading.Tasks.Task<bool> GetStartedSignalAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Emits once the run has transitioned to the running state.
+        /// </summary>
+        /// <remarks>
+        /// Returns a single boolean true when the optimizer for the given runId transitions to the running state. Useful for clients that want to begin subscribing to event streams only after the optimizer has actually started.
+        /// </remarks>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (bool)</returns>
+        System.Threading.Tasks.Task<ApiResponse<bool>> GetStartedSignalWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Stop an active optimization run gracefully.
+        /// </summary>
+        /// <remarks>
+        /// Requests a graceful stop of the run identified by runId. The optimizer finishes its current iteration and emits the best result found so far, which is then returned by the blocking GET result endpoint. Returns 404 if the runId is unknown or already completed.
+        /// </remarks>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of bool</returns>
+        System.Threading.Tasks.Task<bool> StopRunAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Stop an active optimization run gracefully.
+        /// </summary>
+        /// <remarks>
+        /// Requests a graceful stop of the run identified by runId. The optimizer finishes its current iteration and emits the best result found so far, which is then returned by the blocking GET result endpoint. Returns 404 if the runId is unknown or already completed.
+        /// </remarks>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (bool)</returns>
+        System.Threading.Tasks.Task<ApiResponse<bool>> StopRunWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
+        /// <summary>
+        /// SSE stream of optimization errors for a run.
+        /// </summary>
+        /// <remarks>
+        /// Subscribe to receive error events for the run identified by runId. Errors indicate serious problems that may affect result quality.
+        /// </remarks>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of List&lt;JOptOptimizationError&gt;</returns>
-        System.Threading.Tasks.Task<List<JOptOptimizationError>> ErrorAsync(System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<List<JOptOptimizationError>> StreamErrorsAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Stream of error. During the optimization run you can obtain optimization errors in percentage by subscribing to this stream
+        /// SSE stream of optimization errors for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of error
+        /// Subscribe to receive error events for the run identified by runId. Errors indicate serious problems that may affect result quality.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (List&lt;JOptOptimizationError&gt;)</returns>
-        System.Threading.Tasks.Task<ApiResponse<List<JOptOptimizationError>>> ErrorWithHttpInfoAsync(System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<ApiResponse<List<JOptOptimizationError>>> StreamErrorsWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
         /// <summary>
-        /// Stream of progress. During the optimization run you can obtain the optimization progress in percentage and other useful information about the optimization progress by subscribing to this stream
+        /// SSE stream of optimization progress for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of progress
+        /// Subscribe to receive real-time progress updates for the run identified by runId. Each event contains the current progress percentage and timing information.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of List&lt;JOptOptimizationProgress&gt;</returns>
-        System.Threading.Tasks.Task<List<JOptOptimizationProgress>> ProgressAsync(System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<List<JOptOptimizationProgress>> StreamProgressAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Stream of progress. During the optimization run you can obtain the optimization progress in percentage and other useful information about the optimization progress by subscribing to this stream
+        /// SSE stream of optimization progress for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of progress
+        /// Subscribe to receive real-time progress updates for the run identified by runId. Each event contains the current progress percentage and timing information.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (List&lt;JOptOptimizationProgress&gt;)</returns>
-        System.Threading.Tasks.Task<ApiResponse<List<JOptOptimizationProgress>>> ProgressWithHttpInfoAsync(System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<ApiResponse<List<JOptOptimizationProgress>>> StreamProgressWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
         /// <summary>
-        /// Stream of status messages. During the optimization run you can obtain the optimization status by subscribing to this stream
+        /// SSE stream of optimization status messages for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of progress
+        /// Subscribe to receive status lifecycle events for the run identified by runId (e.g. STARTED, RUNNING, FINISHED).
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of List&lt;JOptOptimizationStatus&gt;</returns>
-        System.Threading.Tasks.Task<List<JOptOptimizationStatus>> StatusAsync(System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<List<JOptOptimizationStatus>> StreamStatusAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Stream of status messages. During the optimization run you can obtain the optimization status by subscribing to this stream
+        /// SSE stream of optimization status messages for a run.
         /// </summary>
         /// <remarks>
-        /// Stream of progress
+        /// Subscribe to receive status lifecycle events for the run identified by runId (e.g. STARTED, RUNNING, FINISHED).
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (List&lt;JOptOptimizationStatus&gt;)</returns>
-        System.Threading.Tasks.Task<ApiResponse<List<JOptOptimizationStatus>>> StatusWithHttpInfoAsync(System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<ApiResponse<List<JOptOptimizationStatus>>> StreamStatusWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
         /// <summary>
-        /// Stream of warning messages. During the optimization run you can obtain optimization warnings by subscribing to this stream
+        /// SSE stream of optimization warnings for a run.
         /// </summary>
         /// <remarks>
-        /// text/event-stream
+        /// Subscribe to receive warning events for the run identified by runId. Warnings indicate non-fatal issues such as unserviceable nodes or soft constraint violations.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of List&lt;JOptOptimizationWarning&gt;</returns>
-        System.Threading.Tasks.Task<List<JOptOptimizationWarning>> WarningAsync(System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<List<JOptOptimizationWarning>> StreamWarningsAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Stream of warning messages. During the optimization run you can obtain optimization warnings by subscribing to this stream
+        /// SSE stream of optimization warnings for a run.
         /// </summary>
         /// <remarks>
-        /// text/event-stream
+        /// Subscribe to receive warning events for the run identified by runId. Warnings indicate non-fatal issues such as unserviceable nodes or soft constraint violations.
         /// </remarks>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (List&lt;JOptOptimizationWarning&gt;)</returns>
-        System.Threading.Tasks.Task<ApiResponse<List<JOptOptimizationWarning>>> WarningWithHttpInfoAsync(System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<ApiResponse<List<JOptOptimizationWarning>>> StreamWarningsWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default);
         #endregion Asynchronous Operations
     }
 
@@ -411,23 +515,29 @@ namespace Org.OpenAPITools.Api
         }
 
         /// <summary>
-        /// Stream of error. During the optimization run you can obtain optimization errors in percentage by subscribing to this stream Stream of error
+        /// Emits once the run has transitioned to the running state. Returns a single boolean true when the optimizer for the given runId transitions to the running state. Useful for clients that want to begin subscribing to event streams only after the optimizer has actually started.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
-        /// <returns>List&lt;JOptOptimizationError&gt;</returns>
-        public List<JOptOptimizationError> Error()
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>bool</returns>
+        public bool GetStartedSignal(string runId)
         {
-            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationError>> localVarResponse = ErrorWithHttpInfo();
+            Org.OpenAPITools.Client.ApiResponse<bool> localVarResponse = GetStartedSignalWithHttpInfo(runId);
             return localVarResponse.Data;
         }
 
         /// <summary>
-        /// Stream of error. During the optimization run you can obtain optimization errors in percentage by subscribing to this stream Stream of error
+        /// Emits once the run has transitioned to the running state. Returns a single boolean true when the optimizer for the given runId transitions to the running state. Useful for clients that want to begin subscribing to event streams only after the optimizer has actually started.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
-        /// <returns>ApiResponse of List&lt;JOptOptimizationError&gt;</returns>
-        public Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationError>> ErrorWithHttpInfo()
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>ApiResponse of bool</returns>
+        public Org.OpenAPITools.Client.ApiResponse<bool> GetStartedSignalWithHttpInfo(string runId)
         {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->GetStartedSignal");
+
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
 
             string[] _contentTypes = new string[] {
@@ -435,7 +545,7 @@ namespace Org.OpenAPITools.Api
 
             // to determine the Accept header
             string[] _accepts = new string[] {
-                "text/event-stream"
+                "application/json"
             };
 
             var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
@@ -444,14 +554,15 @@ namespace Org.OpenAPITools.Api
             var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
             if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
 
 
             // make the HTTP request
-            var localVarResponse = this.Client.Get<List<JOptOptimizationError>>("/api/optimize/stream/error", localVarRequestOptions, this.Configuration);
+            var localVarResponse = this.Client.Get<bool>("/api/v1/runs/{runId}/started", localVarRequestOptions, this.Configuration);
 
             if (this.ExceptionFactory != null)
             {
-                Exception _exception = this.ExceptionFactory("Error", localVarResponse);
+                Exception _exception = this.ExceptionFactory("GetStartedSignal", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 
@@ -459,25 +570,262 @@ namespace Org.OpenAPITools.Api
         }
 
         /// <summary>
-        /// Stream of error. During the optimization run you can obtain optimization errors in percentage by subscribing to this stream Stream of error
+        /// Emits once the run has transitioned to the running state. Returns a single boolean true when the optimizer for the given runId transitions to the running state. Useful for clients that want to begin subscribing to event streams only after the optimizer has actually started.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of bool</returns>
+        public async System.Threading.Tasks.Task<bool> GetStartedSignalAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
+        {
+            Org.OpenAPITools.Client.ApiResponse<bool> localVarResponse = await GetStartedSignalWithHttpInfoAsync(runId, cancellationToken).ConfigureAwait(false);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Emits once the run has transitioned to the running state. Returns a single boolean true when the optimizer for the given runId transitions to the running state. Useful for clients that want to begin subscribing to event streams only after the optimizer has actually started.
+        /// </summary>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (bool)</returns>
+        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<bool>> GetStartedSignalWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
+        {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->GetStartedSignal");
+
+
+            Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+
+            var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
+
+
+            // make the HTTP request
+
+            var localVarResponse = await this.AsynchronousClient.GetAsync<bool>("/api/v1/runs/{runId}/started", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("GetStartedSignal", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Stop an active optimization run gracefully. Requests a graceful stop of the run identified by runId. The optimizer finishes its current iteration and emits the best result found so far, which is then returned by the blocking GET result endpoint. Returns 404 if the runId is unknown or already completed.
+        /// </summary>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>bool</returns>
+        public bool StopRun(string runId)
+        {
+            Org.OpenAPITools.Client.ApiResponse<bool> localVarResponse = StopRunWithHttpInfo(runId);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Stop an active optimization run gracefully. Requests a graceful stop of the run identified by runId. The optimizer finishes its current iteration and emits the best result found so far, which is then returned by the blocking GET result endpoint. Returns 404 if the runId is unknown or already completed.
+        /// </summary>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>ApiResponse of bool</returns>
+        public Org.OpenAPITools.Client.ApiResponse<bool> StopRunWithHttpInfo(string runId)
+        {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StopRun");
+
+            Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+            var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
+
+
+            // make the HTTP request
+            var localVarResponse = this.Client.Delete<bool>("/api/v1/runs/{runId}", localVarRequestOptions, this.Configuration);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("StopRun", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// Stop an active optimization run gracefully. Requests a graceful stop of the run identified by runId. The optimizer finishes its current iteration and emits the best result found so far, which is then returned by the blocking GET result endpoint. Returns 404 if the runId is unknown or already completed.
+        /// </summary>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of bool</returns>
+        public async System.Threading.Tasks.Task<bool> StopRunAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
+        {
+            Org.OpenAPITools.Client.ApiResponse<bool> localVarResponse = await StopRunWithHttpInfoAsync(runId, cancellationToken).ConfigureAwait(false);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// Stop an active optimization run gracefully. Requests a graceful stop of the run identified by runId. The optimizer finishes its current iteration and emits the best result found so far, which is then returned by the blocking GET result endpoint. Returns 404 if the runId is unknown or already completed.
+        /// </summary>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
+        /// <returns>Task of ApiResponse (bool)</returns>
+        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<bool>> StopRunWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
+        {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StopRun");
+
+
+            Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "application/json"
+            };
+
+
+            var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
+
+
+            // make the HTTP request
+
+            var localVarResponse = await this.AsynchronousClient.DeleteAsync<bool>("/api/v1/runs/{runId}", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("StopRun", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// SSE stream of optimization errors for a run. Subscribe to receive error events for the run identified by runId. Errors indicate serious problems that may affect result quality.
+        /// </summary>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>List&lt;JOptOptimizationError&gt;</returns>
+        public List<JOptOptimizationError> StreamErrors(string runId)
+        {
+            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationError>> localVarResponse = StreamErrorsWithHttpInfo(runId);
+            return localVarResponse.Data;
+        }
+
+        /// <summary>
+        /// SSE stream of optimization errors for a run. Subscribe to receive error events for the run identified by runId. Errors indicate serious problems that may affect result quality.
+        /// </summary>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
+        /// <returns>ApiResponse of List&lt;JOptOptimizationError&gt;</returns>
+        public Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationError>> StreamErrorsWithHttpInfo(string runId)
+        {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StreamErrors");
+
+            Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
+
+            string[] _contentTypes = new string[] {
+            };
+
+            // to determine the Accept header
+            string[] _accepts = new string[] {
+                "text/event-stream",
+                "application/json"
+            };
+
+            var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
+            if (localVarContentType != null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+
+            var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
+            if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
+
+
+            // make the HTTP request
+            var localVarResponse = this.Client.Get<List<JOptOptimizationError>>("/api/v1/runs/{runId}/stream/errors", localVarRequestOptions, this.Configuration);
+
+            if (this.ExceptionFactory != null)
+            {
+                Exception _exception = this.ExceptionFactory("StreamErrors", localVarResponse);
+                if (_exception != null) throw _exception;
+            }
+
+            return localVarResponse;
+        }
+
+        /// <summary>
+        /// SSE stream of optimization errors for a run. Subscribe to receive error events for the run identified by runId. Errors indicate serious problems that may affect result quality.
+        /// </summary>
+        /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of List&lt;JOptOptimizationError&gt;</returns>
-        public async System.Threading.Tasks.Task<List<JOptOptimizationError>> ErrorAsync(System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<List<JOptOptimizationError>> StreamErrorsAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
         {
-            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationError>> localVarResponse = await ErrorWithHttpInfoAsync(cancellationToken).ConfigureAwait(false);
+            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationError>> localVarResponse = await StreamErrorsWithHttpInfoAsync(runId, cancellationToken).ConfigureAwait(false);
             return localVarResponse.Data;
         }
 
         /// <summary>
-        /// Stream of error. During the optimization run you can obtain optimization errors in percentage by subscribing to this stream Stream of error
+        /// SSE stream of optimization errors for a run. Subscribe to receive error events for the run identified by runId. Errors indicate serious problems that may affect result quality.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (List&lt;JOptOptimizationError&gt;)</returns>
-        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationError>>> ErrorWithHttpInfoAsync(System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationError>>> StreamErrorsWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
         {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StreamErrors");
+
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
 
@@ -486,7 +834,8 @@ namespace Org.OpenAPITools.Api
 
             // to determine the Accept header
             string[] _accepts = new string[] {
-                "text/event-stream"
+                "text/event-stream",
+                "application/json"
             };
 
 
@@ -496,15 +845,16 @@ namespace Org.OpenAPITools.Api
             var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
             if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
 
 
             // make the HTTP request
 
-            var localVarResponse = await this.AsynchronousClient.GetAsync<List<JOptOptimizationError>>("/api/optimize/stream/error", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+            var localVarResponse = await this.AsynchronousClient.GetAsync<List<JOptOptimizationError>>("/api/v1/runs/{runId}/stream/errors", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
 
             if (this.ExceptionFactory != null)
             {
-                Exception _exception = this.ExceptionFactory("Error", localVarResponse);
+                Exception _exception = this.ExceptionFactory("StreamErrors", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 
@@ -512,23 +862,29 @@ namespace Org.OpenAPITools.Api
         }
 
         /// <summary>
-        /// Stream of progress. During the optimization run you can obtain the optimization progress in percentage and other useful information about the optimization progress by subscribing to this stream Stream of progress
+        /// SSE stream of optimization progress for a run. Subscribe to receive real-time progress updates for the run identified by runId. Each event contains the current progress percentage and timing information.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>List&lt;JOptOptimizationProgress&gt;</returns>
-        public List<JOptOptimizationProgress> Progress()
+        public List<JOptOptimizationProgress> StreamProgress(string runId)
         {
-            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationProgress>> localVarResponse = ProgressWithHttpInfo();
+            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationProgress>> localVarResponse = StreamProgressWithHttpInfo(runId);
             return localVarResponse.Data;
         }
 
         /// <summary>
-        /// Stream of progress. During the optimization run you can obtain the optimization progress in percentage and other useful information about the optimization progress by subscribing to this stream Stream of progress
+        /// SSE stream of optimization progress for a run. Subscribe to receive real-time progress updates for the run identified by runId. Each event contains the current progress percentage and timing information.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>ApiResponse of List&lt;JOptOptimizationProgress&gt;</returns>
-        public Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationProgress>> ProgressWithHttpInfo()
+        public Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationProgress>> StreamProgressWithHttpInfo(string runId)
         {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StreamProgress");
+
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
 
             string[] _contentTypes = new string[] {
@@ -536,7 +892,8 @@ namespace Org.OpenAPITools.Api
 
             // to determine the Accept header
             string[] _accepts = new string[] {
-                "text/event-stream"
+                "text/event-stream",
+                "application/json"
             };
 
             var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
@@ -545,14 +902,15 @@ namespace Org.OpenAPITools.Api
             var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
             if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
 
 
             // make the HTTP request
-            var localVarResponse = this.Client.Get<List<JOptOptimizationProgress>>("/api/optimize/stream/progress", localVarRequestOptions, this.Configuration);
+            var localVarResponse = this.Client.Get<List<JOptOptimizationProgress>>("/api/v1/runs/{runId}/stream/progress", localVarRequestOptions, this.Configuration);
 
             if (this.ExceptionFactory != null)
             {
-                Exception _exception = this.ExceptionFactory("Progress", localVarResponse);
+                Exception _exception = this.ExceptionFactory("StreamProgress", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 
@@ -560,25 +918,31 @@ namespace Org.OpenAPITools.Api
         }
 
         /// <summary>
-        /// Stream of progress. During the optimization run you can obtain the optimization progress in percentage and other useful information about the optimization progress by subscribing to this stream Stream of progress
+        /// SSE stream of optimization progress for a run. Subscribe to receive real-time progress updates for the run identified by runId. Each event contains the current progress percentage and timing information.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of List&lt;JOptOptimizationProgress&gt;</returns>
-        public async System.Threading.Tasks.Task<List<JOptOptimizationProgress>> ProgressAsync(System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<List<JOptOptimizationProgress>> StreamProgressAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
         {
-            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationProgress>> localVarResponse = await ProgressWithHttpInfoAsync(cancellationToken).ConfigureAwait(false);
+            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationProgress>> localVarResponse = await StreamProgressWithHttpInfoAsync(runId, cancellationToken).ConfigureAwait(false);
             return localVarResponse.Data;
         }
 
         /// <summary>
-        /// Stream of progress. During the optimization run you can obtain the optimization progress in percentage and other useful information about the optimization progress by subscribing to this stream Stream of progress
+        /// SSE stream of optimization progress for a run. Subscribe to receive real-time progress updates for the run identified by runId. Each event contains the current progress percentage and timing information.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (List&lt;JOptOptimizationProgress&gt;)</returns>
-        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationProgress>>> ProgressWithHttpInfoAsync(System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationProgress>>> StreamProgressWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
         {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StreamProgress");
+
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
 
@@ -587,7 +951,8 @@ namespace Org.OpenAPITools.Api
 
             // to determine the Accept header
             string[] _accepts = new string[] {
-                "text/event-stream"
+                "text/event-stream",
+                "application/json"
             };
 
 
@@ -597,15 +962,16 @@ namespace Org.OpenAPITools.Api
             var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
             if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
 
 
             // make the HTTP request
 
-            var localVarResponse = await this.AsynchronousClient.GetAsync<List<JOptOptimizationProgress>>("/api/optimize/stream/progress", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+            var localVarResponse = await this.AsynchronousClient.GetAsync<List<JOptOptimizationProgress>>("/api/v1/runs/{runId}/stream/progress", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
 
             if (this.ExceptionFactory != null)
             {
-                Exception _exception = this.ExceptionFactory("Progress", localVarResponse);
+                Exception _exception = this.ExceptionFactory("StreamProgress", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 
@@ -613,23 +979,29 @@ namespace Org.OpenAPITools.Api
         }
 
         /// <summary>
-        /// Stream of status messages. During the optimization run you can obtain the optimization status by subscribing to this stream Stream of progress
+        /// SSE stream of optimization status messages for a run. Subscribe to receive status lifecycle events for the run identified by runId (e.g. STARTED, RUNNING, FINISHED).
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>List&lt;JOptOptimizationStatus&gt;</returns>
-        public List<JOptOptimizationStatus> Status()
+        public List<JOptOptimizationStatus> StreamStatus(string runId)
         {
-            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationStatus>> localVarResponse = StatusWithHttpInfo();
+            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationStatus>> localVarResponse = StreamStatusWithHttpInfo(runId);
             return localVarResponse.Data;
         }
 
         /// <summary>
-        /// Stream of status messages. During the optimization run you can obtain the optimization status by subscribing to this stream Stream of progress
+        /// SSE stream of optimization status messages for a run. Subscribe to receive status lifecycle events for the run identified by runId (e.g. STARTED, RUNNING, FINISHED).
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>ApiResponse of List&lt;JOptOptimizationStatus&gt;</returns>
-        public Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationStatus>> StatusWithHttpInfo()
+        public Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationStatus>> StreamStatusWithHttpInfo(string runId)
         {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StreamStatus");
+
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
 
             string[] _contentTypes = new string[] {
@@ -637,7 +1009,8 @@ namespace Org.OpenAPITools.Api
 
             // to determine the Accept header
             string[] _accepts = new string[] {
-                "text/event-stream"
+                "text/event-stream",
+                "application/json"
             };
 
             var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
@@ -646,14 +1019,15 @@ namespace Org.OpenAPITools.Api
             var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
             if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
 
 
             // make the HTTP request
-            var localVarResponse = this.Client.Get<List<JOptOptimizationStatus>>("/api/optimize/stream/status", localVarRequestOptions, this.Configuration);
+            var localVarResponse = this.Client.Get<List<JOptOptimizationStatus>>("/api/v1/runs/{runId}/stream/status", localVarRequestOptions, this.Configuration);
 
             if (this.ExceptionFactory != null)
             {
-                Exception _exception = this.ExceptionFactory("Status", localVarResponse);
+                Exception _exception = this.ExceptionFactory("StreamStatus", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 
@@ -661,25 +1035,31 @@ namespace Org.OpenAPITools.Api
         }
 
         /// <summary>
-        /// Stream of status messages. During the optimization run you can obtain the optimization status by subscribing to this stream Stream of progress
+        /// SSE stream of optimization status messages for a run. Subscribe to receive status lifecycle events for the run identified by runId (e.g. STARTED, RUNNING, FINISHED).
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of List&lt;JOptOptimizationStatus&gt;</returns>
-        public async System.Threading.Tasks.Task<List<JOptOptimizationStatus>> StatusAsync(System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<List<JOptOptimizationStatus>> StreamStatusAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
         {
-            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationStatus>> localVarResponse = await StatusWithHttpInfoAsync(cancellationToken).ConfigureAwait(false);
+            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationStatus>> localVarResponse = await StreamStatusWithHttpInfoAsync(runId, cancellationToken).ConfigureAwait(false);
             return localVarResponse.Data;
         }
 
         /// <summary>
-        /// Stream of status messages. During the optimization run you can obtain the optimization status by subscribing to this stream Stream of progress
+        /// SSE stream of optimization status messages for a run. Subscribe to receive status lifecycle events for the run identified by runId (e.g. STARTED, RUNNING, FINISHED).
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (List&lt;JOptOptimizationStatus&gt;)</returns>
-        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationStatus>>> StatusWithHttpInfoAsync(System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationStatus>>> StreamStatusWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
         {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StreamStatus");
+
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
 
@@ -688,7 +1068,8 @@ namespace Org.OpenAPITools.Api
 
             // to determine the Accept header
             string[] _accepts = new string[] {
-                "text/event-stream"
+                "text/event-stream",
+                "application/json"
             };
 
 
@@ -698,15 +1079,16 @@ namespace Org.OpenAPITools.Api
             var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
             if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
 
 
             // make the HTTP request
 
-            var localVarResponse = await this.AsynchronousClient.GetAsync<List<JOptOptimizationStatus>>("/api/optimize/stream/status", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+            var localVarResponse = await this.AsynchronousClient.GetAsync<List<JOptOptimizationStatus>>("/api/v1/runs/{runId}/stream/status", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
 
             if (this.ExceptionFactory != null)
             {
-                Exception _exception = this.ExceptionFactory("Status", localVarResponse);
+                Exception _exception = this.ExceptionFactory("StreamStatus", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 
@@ -714,23 +1096,29 @@ namespace Org.OpenAPITools.Api
         }
 
         /// <summary>
-        /// Stream of warning messages. During the optimization run you can obtain optimization warnings by subscribing to this stream text/event-stream
+        /// SSE stream of optimization warnings for a run. Subscribe to receive warning events for the run identified by runId. Warnings indicate non-fatal issues such as unserviceable nodes or soft constraint violations.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>List&lt;JOptOptimizationWarning&gt;</returns>
-        public List<JOptOptimizationWarning> Warning()
+        public List<JOptOptimizationWarning> StreamWarnings(string runId)
         {
-            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationWarning>> localVarResponse = WarningWithHttpInfo();
+            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationWarning>> localVarResponse = StreamWarningsWithHttpInfo(runId);
             return localVarResponse.Data;
         }
 
         /// <summary>
-        /// Stream of warning messages. During the optimization run you can obtain optimization warnings by subscribing to this stream text/event-stream
+        /// SSE stream of optimization warnings for a run. Subscribe to receive warning events for the run identified by runId. Warnings indicate non-fatal issues such as unserviceable nodes or soft constraint violations.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <returns>ApiResponse of List&lt;JOptOptimizationWarning&gt;</returns>
-        public Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationWarning>> WarningWithHttpInfo()
+        public Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationWarning>> StreamWarningsWithHttpInfo(string runId)
         {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StreamWarnings");
+
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
 
             string[] _contentTypes = new string[] {
@@ -738,7 +1126,8 @@ namespace Org.OpenAPITools.Api
 
             // to determine the Accept header
             string[] _accepts = new string[] {
-                "text/event-stream"
+                "text/event-stream",
+                "application/json"
             };
 
             var localVarContentType = Org.OpenAPITools.Client.ClientUtils.SelectHeaderContentType(_contentTypes);
@@ -747,14 +1136,15 @@ namespace Org.OpenAPITools.Api
             var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
             if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
 
 
             // make the HTTP request
-            var localVarResponse = this.Client.Get<List<JOptOptimizationWarning>>("/api/optimize/stream/warning", localVarRequestOptions, this.Configuration);
+            var localVarResponse = this.Client.Get<List<JOptOptimizationWarning>>("/api/v1/runs/{runId}/stream/warnings", localVarRequestOptions, this.Configuration);
 
             if (this.ExceptionFactory != null)
             {
-                Exception _exception = this.ExceptionFactory("Warning", localVarResponse);
+                Exception _exception = this.ExceptionFactory("StreamWarnings", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 
@@ -762,25 +1152,31 @@ namespace Org.OpenAPITools.Api
         }
 
         /// <summary>
-        /// Stream of warning messages. During the optimization run you can obtain optimization warnings by subscribing to this stream text/event-stream
+        /// SSE stream of optimization warnings for a run. Subscribe to receive warning events for the run identified by runId. Warnings indicate non-fatal issues such as unserviceable nodes or soft constraint violations.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of List&lt;JOptOptimizationWarning&gt;</returns>
-        public async System.Threading.Tasks.Task<List<JOptOptimizationWarning>> WarningAsync(System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<List<JOptOptimizationWarning>> StreamWarningsAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
         {
-            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationWarning>> localVarResponse = await WarningWithHttpInfoAsync(cancellationToken).ConfigureAwait(false);
+            Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationWarning>> localVarResponse = await StreamWarningsWithHttpInfoAsync(runId, cancellationToken).ConfigureAwait(false);
             return localVarResponse.Data;
         }
 
         /// <summary>
-        /// Stream of warning messages. During the optimization run you can obtain optimization warnings by subscribing to this stream text/event-stream
+        /// SSE stream of optimization warnings for a run. Subscribe to receive warning events for the run identified by runId. Warnings indicate non-fatal issues such as unserviceable nodes or soft constraint violations.
         /// </summary>
         /// <exception cref="Org.OpenAPITools.Client.ApiException">Thrown when fails to make API call</exception>
+        /// <param name="runId">Run identifier returned by POST /api/v1/runs.</param>
         /// <param name="cancellationToken">Cancellation Token to cancel the request.</param>
         /// <returns>Task of ApiResponse (List&lt;JOptOptimizationWarning&gt;)</returns>
-        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationWarning>>> WarningWithHttpInfoAsync(System.Threading.CancellationToken cancellationToken = default)
+        public async System.Threading.Tasks.Task<Org.OpenAPITools.Client.ApiResponse<List<JOptOptimizationWarning>>> StreamWarningsWithHttpInfoAsync(string runId, System.Threading.CancellationToken cancellationToken = default)
         {
+            // verify the required parameter 'runId' is set
+            if (runId == null)
+                throw new Org.OpenAPITools.Client.ApiException(400, "Missing required parameter 'runId' when calling StreamApi->StreamWarnings");
+
 
             Org.OpenAPITools.Client.RequestOptions localVarRequestOptions = new Org.OpenAPITools.Client.RequestOptions();
 
@@ -789,7 +1185,8 @@ namespace Org.OpenAPITools.Api
 
             // to determine the Accept header
             string[] _accepts = new string[] {
-                "text/event-stream"
+                "text/event-stream",
+                "application/json"
             };
 
 
@@ -799,15 +1196,16 @@ namespace Org.OpenAPITools.Api
             var localVarAccept = Org.OpenAPITools.Client.ClientUtils.SelectHeaderAccept(_accepts);
             if (localVarAccept != null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
 
+            localVarRequestOptions.PathParameters.Add("runId", Org.OpenAPITools.Client.ClientUtils.ParameterToString(runId)); // path parameter
 
 
             // make the HTTP request
 
-            var localVarResponse = await this.AsynchronousClient.GetAsync<List<JOptOptimizationWarning>>("/api/optimize/stream/warning", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
+            var localVarResponse = await this.AsynchronousClient.GetAsync<List<JOptOptimizationWarning>>("/api/v1/runs/{runId}/stream/warnings", localVarRequestOptions, this.Configuration, cancellationToken).ConfigureAwait(false);
 
             if (this.ExceptionFactory != null)
             {
-                Exception _exception = this.ExceptionFactory("Warning", localVarResponse);
+                Exception _exception = this.ExceptionFactory("StreamWarnings", localVarResponse);
                 if (_exception != null) throw _exception;
             }
 

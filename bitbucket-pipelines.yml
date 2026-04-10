@@ -8,7 +8,7 @@ pipelines:
           - docker
         script:
           - cd ./sandbox/net/
-          - myVersion=1.1 
+          - myVersion=2.0
           - docker version
           - docker build -t dnaevolutions/jopt_net_example_server:${myVersion} .
           - docker tag dnaevolutions/jopt_net_example_server:${myVersion} dnaevolutions/jopt_net_example_server:latest

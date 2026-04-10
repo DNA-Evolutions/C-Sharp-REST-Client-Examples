@@ -6,7 +6,7 @@
  * %%
  * This file is subject to the terms and conditions defined in file 'LICENSE.md',
  * which is part of this repository.
- * 
+ *
  * If not, see <https://www.dna-evolutions.com/agb-conditions-and-terms/>.
  * #L%
  */
@@ -19,16 +19,27 @@ using System.Collections.Generic;
 
 namespace Optimize
 {
+    /// <summary>
+    /// Example demonstrating constraint-based optimization. Nodes are created with a
+    /// <see cref="TypeConstraint"/> requiring "UnreachableQuali", while resources only provide "Quali".
+    /// This mismatch causes constraint violations in the result, illustrating how the optimizer
+    /// reports unmet requirements.
+    /// </summary>
     public class TourOptimizerConstraintExample
     {
 
+        /// <summary>
+        /// Entry point. Creates nodes with an unreachable type constraint and resources with a
+        /// non-matching qualification, runs the optimization, and outputs the result showing violations.
+        /// </summary>
+        /// <param name="args">Command-line arguments (not used).</param>
         public static void Main(string[] args)
         {
 
             /*
-             * 
+             *
              * Modify me
-             * 
+             *
              */
             Boolean isAzureCall = !true; // Make sure you have a local docker container running at Endpoints.LOCAL_SWAGGER_TOUROPTIMIZER_URL
 

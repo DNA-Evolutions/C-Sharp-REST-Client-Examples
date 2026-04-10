@@ -1,9 +1,9 @@
 /*
  * DNA Evolutions - JOpt.TourOptimizer
  *
- * This is DNA's JOpt.TourOptimizer service. A RESTful Spring Boot application using springdoc-openapi and OpenAPI 3. JOpt.TourOptimizer is a service that delivers route optimization and automatic scheduling features to be easily integrated into any third-party application. JOpt.TourOptimizer encapsulates all necessary optimization functionality and provides a comprehensive REST API that offers a domain-specific optimization interface for the transportation industry. The service is stateless and does not come with graphical user interfaces, map depiction or any databases. These extensions and adjustments are supposed to be introduced by the consumer of the service while integrating it into his/her own application. The service will allow for many suitable adjustments and user-specific settings to adjust the behaviour and optimization goals (e.g. minimizing distance, maximizing resource utilization, etc.) through a comprehensive set of functions. This will enable you to gain control of the complete optimization processes.This service is based on JOpt (7.5.3-j17)
+ * # JOpt.TourOptimizer REST API  ![DNA Evolutions Logo](https://www.dna-evolutions.com/images/dna_logo.png)  JOpt.TourOptimizer is DNA Evolutions' route optimization and scheduling engine for transportation, field service, and resource planning scenarios.  This API is a **reactive Spring WebFlux REST service** with an **OpenAPI 3** contract, designed for integration into third-party systems and for generating typed client SDKs directly from the schema.  - --  ## Endpoint groups  ### Job endpoints (`job`)  The primary integration model for all deployments with a connected database.  Submit an optimization job with `POST /api/v1/jobs` and receive an HTTP 202 response containing a unique `jobId`. Use that jobId to poll for status, progress, warnings, errors, and the final result at any time — no open connection required.  | Endpoint | Description | Availability | |- --|- --|- --| | `POST /api/v1/jobs` | Submit an async optimization job | All deployments | | `GET /api/v1/jobs/{jobId}/status` | Poll job status | All deployments | | `GET /api/v1/jobs/{jobId}/result` | Retrieve full optimization result | All deployments | | `GET /api/v1/jobs/{jobId}/solution` | Retrieve solution payload only | All deployments | | `GET /api/v1/jobs/{jobId}/progress` | Retrieve progress snapshots | All deployments | | `GET /api/v1/jobs/{jobId}/warnings` | Retrieve warning messages | All deployments | | `GET /api/v1/jobs/{jobId}/errors` | Retrieve error messages | All deployments | | `GET /api/v1/jobs/{jobId}/export` | Download result as ZIP archive | All deployments | | `POST /api/v1/jobs/{jobId}/stop` | Send graceful stop signal to a running job | All deployments | | `DELETE /api/v1/jobs/{jobId}` | Delete all persisted data for a job | All deployments | | `POST /api/v1/jobs/search` | Search jobs by metadata criteria | On-premise (free-search enabled) | | `POST /api/v1/jobs/import` | Import a pre-computed result directly | On-premise (import enabled) |  All job endpoints require the `X-Tenant-Id` header, injected by the API gateway. The `jobId` returned at submission is the only token needed for all subsequent reads.  ### Synchronous run endpoints (`optimization`)  Available on on-premise installations with synchronous mode enabled. The client holds the HTTP connection open and receives the result directly in the response body.  | Endpoint | Description | |- --|- --| | `POST /api/v1/runs` | Start a run, return runId immediately (HTTP 202) | | `GET /api/v1/runs/{runId}/result` | Block until run completes, return full result | | `GET /api/v1/runs/{runId}/solution` | Block until run completes, return solution only | | `DELETE /api/v1/runs/{runId}` | Stop the run gracefully | | `GET /api/v1/runs/{runId}/started` | One-shot signal when the run has started |  ### Event stream endpoints (`stream`)  Server-Sent Event streams for monitoring a running synchronous optimization in near real time. Subscribe to one or more streams while a `POST /api/v1/runs` call is in progress.  | Endpoint | Event type | |- --|- --| | `GET /api/v1/runs/{runId}/stream/progress` | Progress percentage and timing | | `GET /api/v1/runs/{runId}/stream/status` | Lifecycle status transitions | | `GET /api/v1/runs/{runId}/stream/warnings` | Non-fatal solver warnings | | `GET /api/v1/runs/{runId}/stream/errors` | Solver error events |  ### Health endpoint (`health`)  | Endpoint | Description | |- --|- --| | `GET /api/v1/health` | Service liveness and readiness |  - --  ## Deployment modes and feature flags  Endpoints that require specific conditions are activated via Spring `@Conditional` annotations and application properties. Endpoints not active in a given deployment are absent from the service entirely and do not appear in the runtime spec.  | Condition | Property / annotation | Effect | |- --|- --|- --| | Database connected | `DatabaseEnabledCondition` | Activates all `job` endpoints | | Sync mode | `SynchControllersEnabledCondition` | Activates `optimization` and `stream` endpoints | | Free search | `DatabaseFreeSearchEnabledCondition` | Activates `POST /api/v1/jobs/search` | | Import | `DatabaseJobImportEnabledCondition` | Activates `POST /api/v1/jobs/import` |  - --  ## Tenant isolation  Every job endpoint is scoped by `X-Tenant-Id`, injected by the API gateway. Persisted documents are tagged with both `jobId` and `tenantId`. A request with a valid `jobId` but a mismatched `tenantId` returns no data. The `jobId` is a UUID v4 (122 bits of randomness) and is not a security credential — security is enforced by the verified `tenantId` from the gateway header.  - --  ## Encryption at rest  Results can be stored encrypted in two modes:  - **CLIENT mode**: key derived from a caller-provided passphrase via PBKDF2.   Pass the same secret in `X-Encryption-Secret` when reading back. - **KMS mode**: server-generated data encryption key (DEK) wrapped by an   external key management service (Azure Key Vault, AWS KMS). Decryption is   transparent to the caller.  The `encrypted` and `sec` fields in `DatabaseInfoSearchResult` indicate which mode was used for each stored result.  - --  ## Client generation  The OpenAPI schema can be used to generate typed clients for any language. The `operationId` values follow `{verb}{Resource}` lowerCamelCase convention (`createJob`, `getJobResult`, `listJobs`, etc.) for predictable generated method names.  - --  This service is based on **JOpt Core (unknown)**. 
  *
- * The version of the OpenAPI document: 1.3.3-SNAPSHOT
+ * The version of the OpenAPI document: 1.3.5-SNAPSHOT
  * Contact: info@dna-evolutions.com
  * Generated by: https://github.com/openapitools/openapi-generator.git
  */
@@ -28,7 +28,7 @@ using OpenAPIDateConverter = Org.OpenAPITools.Client.OpenAPIDateConverter;
 namespace Org.OpenAPITools.Model
 {
     /// <summary>
-    /// The list of resoruces
+    /// A mobile agent (vehicle, driver, technician) available to visit nodes. Defines a home position, one or more working-hour windows with time/distance constraints, optional qualifications (skills), an optional resource depot for pickup-and-delivery, connection efficiency factors, overnight-stay policies, and route configuration (open/closed, alternate destination, return-to-start).
     /// </summary>
     [DataContract(Name = "Resource")]
     public partial class Resource : IValidatableObject
@@ -53,29 +53,29 @@ namespace Org.OpenAPITools.Model
         /// <param name="destinationPosition">destinationPosition.</param>
         /// <param name="stayOutDefinition">stayOutDefinition.</param>
         /// <param name="stayOutCycleDefinition">stayOutCycleDefinition.</param>
-        /// <param name="stayOutPolicyTime">The stayOutPolicyTime.</param>
-        /// <param name="stayOutPolicyDistance">The stayOutPolicyDistance.</param>
-        /// <param name="capacity">The capacity.</param>
-        /// <param name="initialLoad">The initialLoad.</param>
-        /// <param name="minDegratedCapacity">The minDegratedCapacity.</param>
-        /// <param name="capacityDegPerStop">The capacityDegPerStop.</param>
+        /// <param name="stayOutPolicyTime">The maximum additional working time a resource is allowed to accumulate during an overnight-stay route beyond its normal working-hour boundaries. Acts as a buffer for late arrivals at stay nodes..</param>
+        /// <param name="stayOutPolicyDistance">The maximum additional driving distance a resource is allowed to accumulate during an overnight-stay route beyond its normal per-working-hour distance limit. Prevents the resource from driving excessively far to reach a stay node..</param>
+        /// <param name="capacity">The multi-dimensional capacity vector of the resource (e.g. weight in kg, volume in m³, number of pallets). Each element represents the maximum capacity for one dimension. Used in pickup-and-delivery (PND) scenarios to enforce load constraints. The index positions must align with the load dimensions defined on the nodes..</param>
+        /// <param name="initialLoad">The initial load the resource carries at the start of each route, per capacity dimension. For delivery scenarios, this represents the pre-loaded goods at the depot. For pickup scenarios, this is typically zero. Must have the same dimensionality as the capacity vector..</param>
+        /// <param name="minDegratedCapacity">The minimum degraded capacity per dimension. As the resource visits more stops, its effective capacity may degrade (e.g. due to fatigue, compartment loss, or reorganization overhead). This vector defines the floor below which the capacity cannot degrade, regardless of the number of stops visited..</param>
+        /// <param name="capacityDegPerStop">The capacity degradation per stop, per dimension. After each node visit, the resource&#39;s effective capacity is reduced by this amount (down to the minDegratedCapacity floor). Models real-world effects such as compartment unavailability after partial unloading or diminishing usable space..</param>
         /// <param name="startReductionTimeDefinition">startReductionTimeDefinition.</param>
         /// <param name="startReductionTimePillarDefinition">startReductionTimePillarDefinition.</param>
         /// <param name="startReductionTimeIncludeDefinition">startReductionTimeIncludeDefinition.</param>
         /// <param name="flexTime">The local flexible time. In some cases a Resource should start working later compared to what is defined in the working hours. This way idle time can be reduced. The local flex time is the maximum a Resource is allowed to start working later, depending on the Optimization maybe flex time is not or only partially used..</param>
-        /// <param name="postFlexTime">The postFlexTime.</param>
+        /// <param name="postFlexTime">The maximum duration by which the resource is allowed to end its working day earlier than the working-hour boundary. Reduces unnecessary idle time at the end of a route. See also postFlexTimeOnlyOnOvertime to restrict usage to overtime-reduction scenarios..</param>
         /// <param name="postFlexTimeOnlyOnOvertime">The post flextime is only applied to reduce overtime. (default to false).</param>
-        /// <param name="maxPillarAfterHoursTime">The maxPillarAfterHoursTime.</param>
-        /// <param name="maxDriveTimeFirstNode">The maxDriveTimeFirstNode.</param>
-        /// <param name="maxDriveDistanceFirstNode">The maxDriveDistanceFirstNode.</param>
-        /// <param name="maxDriveTimeLastNode">The maxDriveTimeLastNode.</param>
-        /// <param name="maxDriveDistanceLastNode">The maxDriveDistanceLastNode.</param>
+        /// <param name="maxPillarAfterHoursTime">The maximum duration a pillar node may be served after the resource&#39;s official working-hours end. Applies globally across all working hours of this resource. For per-working-hour overrides, use maxLocalPillarAfterHoursTime on the individual WorkingHours object..</param>
+        /// <param name="maxDriveTimeFirstNode">The maximum driving time allowed from the resource&#39;s start position to the first node of a route. Prevents the optimizer from assigning a distant first stop that would consume excessive travel time before productive work begins..</param>
+        /// <param name="maxDriveDistanceFirstNode">The maximum driving distance allowed from the resource&#39;s start position to the first node of a route. Complements maxDriveTimeFirstNode to enforce both time- and distance-based proximity constraints..</param>
+        /// <param name="maxDriveTimeLastNode">The maximum driving time allowed from the last visited node to the route termination element (typically the resource&#39;s home position or alternate destination). Prevents the optimizer from placing a final stop that would require an excessively long return journey..</param>
+        /// <param name="maxDriveDistanceLastNode">The maximum driving distance allowed from the last visited node to the route termination element. Complements maxDriveTimeLastNode to enforce both time- and distance-based return constraints..</param>
         /// <param name="kilometerCost">The kilometerCost defines how much arbitrary cost arises per kilometer driven..</param>
         /// <param name="hourCost">The hourCost defines how much arbitrary cost arises per hour scheduled (idling, working, driving)..</param>
         /// <param name="productionHourCost">The productionHourCost defines how much arbitrary cost arises per hour working..</param>
         /// <param name="fixCost">The fixCost defines an abstract cost that arrises when this node is visited..</param>
-        /// <param name="preWorkDrivingTime">The preWorkDrivingTime.  Use startReductionTimeDefinition instead..</param>
-        /// <param name="skillEfficiencyFactor">The skillEfficiencyFactor.</param>
+        /// <param name="preWorkDrivingTime">DEPRECATED. Use startReductionTimeDefinition instead. Legacy field that defined how long before the official working-hour start the resource was allowed to drive..</param>
+        /// <param name="skillEfficiencyFactor">DEPRECATED. Use the visitDurationEfficiency mechanism on individual nodes and ResourceVisitDurationEfficiency instead. Legacy factor that scaled visit durations for this resource..</param>
         /// <param name="acceptableOvertime">The acceptableOvertime. By default if nodes are constantly leading to overtime for a resource, at some point they might get unassigned (if AutoFilter is activated). The acceptable overtime assigns a margin to avoid filtering nodes if they lead to overtime below this margin. By defaul the property  &#39;JoptAutoFilterWorkingHoursExceedMargin&#39; can be used to globally define this value..</param>
         /// <param name="strictOvertime">The strictOvertime. By default if nodes are constantly leading to overtime for a resource, at some point they might get unassigned (if AutoFilter is activated). The strictOvertime overtime assigns a margin to avoid filtering nodes if they lead to overtime below this margin. By defaul the property  &#39;JoptAutoFilterWorkingHoursStrictExceedMargin&#39; can be used to globally define this value. In contrast to acceptable  overtime, the strict overtime is used during the last fitlering step of the AutoFilter (if strict mode is enabled)..</param>
         /// <param name="acceptableOverdistance">The acceptableOverdistance. Like acceptableOvertime for distance..</param>
@@ -87,10 +87,10 @@ namespace Org.OpenAPITools.Model
         /// <param name="co2emissionFactor">The co2emissionFactor..</param>
         /// <param name="resourceDepot">resourceDepot.</param>
         /// <param name="overallVisitDurationEfficiency">The overallVisitDurationEfficiency. The base duration a Resource spends at a node is devided by this factor. For example, if a node has 30 minutes of visit duration assigned, a Resource with a overallVisitDurationEfficiency of 1.5 only needs 20 minutes. By default this factor is one. (default to 1.0D).</param>
-        /// <param name="isReductionTimeOnlyUsedForDriving">The isReductionTimeOnlyUsedForDriving. Use startReductionTimeDefinition instead. (default to false).</param>
-        /// <param name="isReductionTimeIncludedInTotalWorkingTime">The isReductionTimeIncludedInTotalWorkingTime. Use StartReductionTimeIncludeDefinition instead (default to false).</param>
+        /// <param name="isReductionTimeIncludedInTotalWorkingTime">DEPRECATED. Use StartReductionTimeIncludeDefinition instead. Legacy flag that controlled whether reduction time was counted toward the resource&#39;s total working time. (default to false).</param>
+        /// <param name="isReductionTimeOnlyUsedForDriving">DEPRECATED. Use startReductionTimeDefinition instead. Legacy flag that restricted reduction time to driving only (no working at the first node before the shift starts). (default to false).</param>
         /// <param name="isServiceHub">A resource is hub mode gets visited by nodes. (default to false).</param>
-        public Resource(string id = default, string extraInfo = default, string locationId = default, string constraintAliasId = default, ResourceType type = default, Position position = default, List<WorkingHours> workingHours = default, string maxTime = default, string maxDistance = default, Position destinationPosition = default, StayOutDefinition stayOutDefinition = default, StayOutCycleDefinition stayOutCycleDefinition = default, string stayOutPolicyTime = default, string stayOutPolicyDistance = default, List<double> capacity = default, List<double> initialLoad = default, List<double> minDegratedCapacity = default, List<double> capacityDegPerStop = default, StartReductionTimeDefinition startReductionTimeDefinition = default, StartReductionTimePillarDefinition startReductionTimePillarDefinition = default, StartReductionTimeIncludeDefinition startReductionTimeIncludeDefinition = default, string flexTime = default, string postFlexTime = default, bool? postFlexTimeOnlyOnOvertime = false, string maxPillarAfterHoursTime = default, string maxDriveTimeFirstNode = default, string maxDriveDistanceFirstNode = default, string maxDriveTimeLastNode = default, string maxDriveDistanceLastNode = default, double kilometerCost = default, double hourCost = default, double productionHourCost = default, double fixCost = default, string preWorkDrivingTime = default, double skillEfficiencyFactor = default, string acceptableOvertime = default, string strictOvertime = default, string acceptableOverdistance = default, string strictOverdistance = default, double averageSpeed = default, List<Qualification> qualifications = default, List<Constraint> constraints = default, double connectionTimeEfficiencyFactor = 1.0D, double co2emissionFactor = default, IResourceDepot resourceDepot = default, double overallVisitDurationEfficiency = 1.0D, bool? isReductionTimeOnlyUsedForDriving = false, bool? isReductionTimeIncludedInTotalWorkingTime = false, bool? isServiceHub = false)
+        public Resource(string id = default, string extraInfo = default, string locationId = default, string constraintAliasId = default, ResourceType type = default, Position position = default, List<WorkingHours> workingHours = default, string maxTime = default, string maxDistance = default, Position destinationPosition = default, StayOutDefinition stayOutDefinition = default, StayOutCycleDefinition stayOutCycleDefinition = default, string stayOutPolicyTime = default, string stayOutPolicyDistance = default, List<double> capacity = default, List<double> initialLoad = default, List<double> minDegratedCapacity = default, List<double> capacityDegPerStop = default, StartReductionTimeDefinition startReductionTimeDefinition = default, StartReductionTimePillarDefinition startReductionTimePillarDefinition = default, StartReductionTimeIncludeDefinition startReductionTimeIncludeDefinition = default, string flexTime = default, string postFlexTime = default, bool? postFlexTimeOnlyOnOvertime = false, string maxPillarAfterHoursTime = default, string maxDriveTimeFirstNode = default, string maxDriveDistanceFirstNode = default, string maxDriveTimeLastNode = default, string maxDriveDistanceLastNode = default, double kilometerCost = default, double hourCost = default, double productionHourCost = default, double fixCost = default, string preWorkDrivingTime = default, double skillEfficiencyFactor = default, string acceptableOvertime = default, string strictOvertime = default, string acceptableOverdistance = default, string strictOverdistance = default, double averageSpeed = default, List<Qualification> qualifications = default, List<Constraint> constraints = default, double connectionTimeEfficiencyFactor = 1.0D, double co2emissionFactor = default, IResourceDepot resourceDepot = default, double overallVisitDurationEfficiency = 1.0D, bool? isReductionTimeIncludedInTotalWorkingTime = false, bool? isReductionTimeOnlyUsedForDriving = false, bool? isServiceHub = false)
         {
             // to ensure "id" is required (not null)
             if (id == null)
@@ -169,10 +169,10 @@ namespace Org.OpenAPITools.Model
             this.Co2emissionFactor = co2emissionFactor;
             this.ResourceDepot = resourceDepot;
             this.OverallVisitDurationEfficiency = overallVisitDurationEfficiency;
-            // use default value if no "isReductionTimeOnlyUsedForDriving" provided
-            this.IsReductionTimeOnlyUsedForDriving = isReductionTimeOnlyUsedForDriving ?? false;
             // use default value if no "isReductionTimeIncludedInTotalWorkingTime" provided
             this.IsReductionTimeIncludedInTotalWorkingTime = isReductionTimeIncludedInTotalWorkingTime ?? false;
+            // use default value if no "isReductionTimeOnlyUsedForDriving" provided
+            this.IsReductionTimeOnlyUsedForDriving = isReductionTimeOnlyUsedForDriving ?? false;
             // use default value if no "isServiceHub" provided
             this.IsServiceHub = isServiceHub ?? false;
         }
@@ -182,7 +182,7 @@ namespace Org.OpenAPITools.Model
         /// </summary>
         /// <value>The unique id of the Resource. It is not possible, to create mutliple elements (also Nodes) with the same id.</value>
         /*
-        <example>MyResouce</example>
+        <example>MyResource</example>
         */
         [DataMember(Name = "id", IsRequired = true, EmitDefaultValue = true)]
         public string Id { get; set; }
@@ -275,9 +275,9 @@ namespace Org.OpenAPITools.Model
         public StayOutCycleDefinition StayOutCycleDefinition { get; set; }
 
         /// <summary>
-        /// The stayOutPolicyTime
+        /// The maximum additional working time a resource is allowed to accumulate during an overnight-stay route beyond its normal working-hour boundaries. Acts as a buffer for late arrivals at stay nodes.
         /// </summary>
-        /// <value>The stayOutPolicyTime</value>
+        /// <value>The maximum additional working time a resource is allowed to accumulate during an overnight-stay route beyond its normal working-hour boundaries. Acts as a buffer for late arrivals at stay nodes.</value>
         /*
         <example>PT1H</example>
         */
@@ -285,9 +285,9 @@ namespace Org.OpenAPITools.Model
         public string StayOutPolicyTime { get; set; }
 
         /// <summary>
-        /// The stayOutPolicyDistance
+        /// The maximum additional driving distance a resource is allowed to accumulate during an overnight-stay route beyond its normal per-working-hour distance limit. Prevents the resource from driving excessively far to reach a stay node.
         /// </summary>
-        /// <value>The stayOutPolicyDistance</value>
+        /// <value>The maximum additional driving distance a resource is allowed to accumulate during an overnight-stay route beyond its normal per-working-hour distance limit. Prevents the resource from driving excessively far to reach a stay node.</value>
         /*
         <example>100.0 km</example>
         */
@@ -295,30 +295,30 @@ namespace Org.OpenAPITools.Model
         public string StayOutPolicyDistance { get; set; }
 
         /// <summary>
-        /// The capacity
+        /// The multi-dimensional capacity vector of the resource (e.g. weight in kg, volume in m³, number of pallets). Each element represents the maximum capacity for one dimension. Used in pickup-and-delivery (PND) scenarios to enforce load constraints. The index positions must align with the load dimensions defined on the nodes.
         /// </summary>
-        /// <value>The capacity</value>
+        /// <value>The multi-dimensional capacity vector of the resource (e.g. weight in kg, volume in m³, number of pallets). Each element represents the maximum capacity for one dimension. Used in pickup-and-delivery (PND) scenarios to enforce load constraints. The index positions must align with the load dimensions defined on the nodes.</value>
         [DataMember(Name = "capacity", EmitDefaultValue = false)]
         public List<double> Capacity { get; set; }
 
         /// <summary>
-        /// The initialLoad
+        /// The initial load the resource carries at the start of each route, per capacity dimension. For delivery scenarios, this represents the pre-loaded goods at the depot. For pickup scenarios, this is typically zero. Must have the same dimensionality as the capacity vector.
         /// </summary>
-        /// <value>The initialLoad</value>
+        /// <value>The initial load the resource carries at the start of each route, per capacity dimension. For delivery scenarios, this represents the pre-loaded goods at the depot. For pickup scenarios, this is typically zero. Must have the same dimensionality as the capacity vector.</value>
         [DataMember(Name = "initialLoad", EmitDefaultValue = false)]
         public List<double> InitialLoad { get; set; }
 
         /// <summary>
-        /// The minDegratedCapacity
+        /// The minimum degraded capacity per dimension. As the resource visits more stops, its effective capacity may degrade (e.g. due to fatigue, compartment loss, or reorganization overhead). This vector defines the floor below which the capacity cannot degrade, regardless of the number of stops visited.
         /// </summary>
-        /// <value>The minDegratedCapacity</value>
+        /// <value>The minimum degraded capacity per dimension. As the resource visits more stops, its effective capacity may degrade (e.g. due to fatigue, compartment loss, or reorganization overhead). This vector defines the floor below which the capacity cannot degrade, regardless of the number of stops visited.</value>
         [DataMember(Name = "minDegratedCapacity", EmitDefaultValue = false)]
         public List<double> MinDegratedCapacity { get; set; }
 
         /// <summary>
-        /// The capacityDegPerStop
+        /// The capacity degradation per stop, per dimension. After each node visit, the resource&#39;s effective capacity is reduced by this amount (down to the minDegratedCapacity floor). Models real-world effects such as compartment unavailability after partial unloading or diminishing usable space.
         /// </summary>
-        /// <value>The capacityDegPerStop</value>
+        /// <value>The capacity degradation per stop, per dimension. After each node visit, the resource&#39;s effective capacity is reduced by this amount (down to the minDegratedCapacity floor). Models real-world effects such as compartment unavailability after partial unloading or diminishing usable space.</value>
         [DataMember(Name = "capacityDegPerStop", EmitDefaultValue = false)]
         public List<double> CapacityDegPerStop { get; set; }
 
@@ -351,9 +351,9 @@ namespace Org.OpenAPITools.Model
         public string FlexTime { get; set; }
 
         /// <summary>
-        /// The postFlexTime
+        /// The maximum duration by which the resource is allowed to end its working day earlier than the working-hour boundary. Reduces unnecessary idle time at the end of a route. See also postFlexTimeOnlyOnOvertime to restrict usage to overtime-reduction scenarios.
         /// </summary>
-        /// <value>The postFlexTime</value>
+        /// <value>The maximum duration by which the resource is allowed to end its working day earlier than the working-hour boundary. Reduces unnecessary idle time at the end of a route. See also postFlexTimeOnlyOnOvertime to restrict usage to overtime-reduction scenarios.</value>
         /*
         <example>PT1H</example>
         */
@@ -368,9 +368,9 @@ namespace Org.OpenAPITools.Model
         public bool? PostFlexTimeOnlyOnOvertime { get; set; }
 
         /// <summary>
-        /// The maxPillarAfterHoursTime
+        /// The maximum duration a pillar node may be served after the resource&#39;s official working-hours end. Applies globally across all working hours of this resource. For per-working-hour overrides, use maxLocalPillarAfterHoursTime on the individual WorkingHours object.
         /// </summary>
-        /// <value>The maxPillarAfterHoursTime</value>
+        /// <value>The maximum duration a pillar node may be served after the resource&#39;s official working-hours end. Applies globally across all working hours of this resource. For per-working-hour overrides, use maxLocalPillarAfterHoursTime on the individual WorkingHours object.</value>
         /*
         <example>PT1H</example>
         */
@@ -378,9 +378,9 @@ namespace Org.OpenAPITools.Model
         public string MaxPillarAfterHoursTime { get; set; }
 
         /// <summary>
-        /// The maxDriveTimeFirstNode
+        /// The maximum driving time allowed from the resource&#39;s start position to the first node of a route. Prevents the optimizer from assigning a distant first stop that would consume excessive travel time before productive work begins.
         /// </summary>
-        /// <value>The maxDriveTimeFirstNode</value>
+        /// <value>The maximum driving time allowed from the resource&#39;s start position to the first node of a route. Prevents the optimizer from assigning a distant first stop that would consume excessive travel time before productive work begins.</value>
         /*
         <example>PT1H</example>
         */
@@ -388,9 +388,9 @@ namespace Org.OpenAPITools.Model
         public string MaxDriveTimeFirstNode { get; set; }
 
         /// <summary>
-        /// The maxDriveDistanceFirstNode
+        /// The maximum driving distance allowed from the resource&#39;s start position to the first node of a route. Complements maxDriveTimeFirstNode to enforce both time- and distance-based proximity constraints.
         /// </summary>
-        /// <value>The maxDriveDistanceFirstNode</value>
+        /// <value>The maximum driving distance allowed from the resource&#39;s start position to the first node of a route. Complements maxDriveTimeFirstNode to enforce both time- and distance-based proximity constraints.</value>
         /*
         <example>100.0 km</example>
         */
@@ -398,9 +398,9 @@ namespace Org.OpenAPITools.Model
         public string MaxDriveDistanceFirstNode { get; set; }
 
         /// <summary>
-        /// The maxDriveTimeLastNode
+        /// The maximum driving time allowed from the last visited node to the route termination element (typically the resource&#39;s home position or alternate destination). Prevents the optimizer from placing a final stop that would require an excessively long return journey.
         /// </summary>
-        /// <value>The maxDriveTimeLastNode</value>
+        /// <value>The maximum driving time allowed from the last visited node to the route termination element (typically the resource&#39;s home position or alternate destination). Prevents the optimizer from placing a final stop that would require an excessively long return journey.</value>
         /*
         <example>PT1H</example>
         */
@@ -408,9 +408,9 @@ namespace Org.OpenAPITools.Model
         public string MaxDriveTimeLastNode { get; set; }
 
         /// <summary>
-        /// The maxDriveDistanceLastNode
+        /// The maximum driving distance allowed from the last visited node to the route termination element. Complements maxDriveTimeLastNode to enforce both time- and distance-based return constraints.
         /// </summary>
-        /// <value>The maxDriveDistanceLastNode</value>
+        /// <value>The maximum driving distance allowed from the last visited node to the route termination element. Complements maxDriveTimeLastNode to enforce both time- and distance-based return constraints.</value>
         /*
         <example>100.0 km</example>
         */
@@ -446,20 +446,22 @@ namespace Org.OpenAPITools.Model
         public double FixCost { get; set; }
 
         /// <summary>
-        /// The preWorkDrivingTime.  Use startReductionTimeDefinition instead.
+        /// DEPRECATED. Use startReductionTimeDefinition instead. Legacy field that defined how long before the official working-hour start the resource was allowed to drive.
         /// </summary>
-        /// <value>The preWorkDrivingTime.  Use startReductionTimeDefinition instead.</value>
+        /// <value>DEPRECATED. Use startReductionTimeDefinition instead. Legacy field that defined how long before the official working-hour start the resource was allowed to drive.</value>
         /*
         <example>PT1H</example>
         */
         [DataMember(Name = "preWorkDrivingTime", EmitDefaultValue = false)]
+        [Obsolete]
         public string PreWorkDrivingTime { get; set; }
 
         /// <summary>
-        /// The skillEfficiencyFactor
+        /// DEPRECATED. Use the visitDurationEfficiency mechanism on individual nodes and ResourceVisitDurationEfficiency instead. Legacy factor that scaled visit durations for this resource.
         /// </summary>
-        /// <value>The skillEfficiencyFactor</value>
+        /// <value>DEPRECATED. Use the visitDurationEfficiency mechanism on individual nodes and ResourceVisitDurationEfficiency instead. Legacy factor that scaled visit durations for this resource.</value>
         [DataMember(Name = "skillEfficiencyFactor", EmitDefaultValue = false)]
+        [Obsolete]
         public double SkillEfficiencyFactor { get; set; }
 
         /// <summary>
@@ -560,18 +562,20 @@ namespace Org.OpenAPITools.Model
         public double OverallVisitDurationEfficiency { get; set; }
 
         /// <summary>
-        /// The isReductionTimeOnlyUsedForDriving. Use startReductionTimeDefinition instead.
+        /// DEPRECATED. Use StartReductionTimeIncludeDefinition instead. Legacy flag that controlled whether reduction time was counted toward the resource&#39;s total working time.
         /// </summary>
-        /// <value>The isReductionTimeOnlyUsedForDriving. Use startReductionTimeDefinition instead.</value>
-        [DataMember(Name = "isReductionTimeOnlyUsedForDriving", EmitDefaultValue = true)]
-        public bool? IsReductionTimeOnlyUsedForDriving { get; set; }
+        /// <value>DEPRECATED. Use StartReductionTimeIncludeDefinition instead. Legacy flag that controlled whether reduction time was counted toward the resource&#39;s total working time.</value>
+        [DataMember(Name = "isReductionTimeIncludedInTotalWorkingTime", EmitDefaultValue = true)]
+        [Obsolete]
+        public bool? IsReductionTimeIncludedInTotalWorkingTime { get; set; }
 
         /// <summary>
-        /// The isReductionTimeIncludedInTotalWorkingTime. Use StartReductionTimeIncludeDefinition instead
+        /// DEPRECATED. Use startReductionTimeDefinition instead. Legacy flag that restricted reduction time to driving only (no working at the first node before the shift starts).
         /// </summary>
-        /// <value>The isReductionTimeIncludedInTotalWorkingTime. Use StartReductionTimeIncludeDefinition instead</value>
-        [DataMember(Name = "isReductionTimeIncludedInTotalWorkingTime", EmitDefaultValue = true)]
-        public bool? IsReductionTimeIncludedInTotalWorkingTime { get; set; }
+        /// <value>DEPRECATED. Use startReductionTimeDefinition instead. Legacy flag that restricted reduction time to driving only (no working at the first node before the shift starts).</value>
+        [DataMember(Name = "isReductionTimeOnlyUsedForDriving", EmitDefaultValue = true)]
+        [Obsolete]
+        public bool? IsReductionTimeOnlyUsedForDriving { get; set; }
 
         /// <summary>
         /// A resource is hub mode gets visited by nodes.
@@ -634,8 +638,8 @@ namespace Org.OpenAPITools.Model
             sb.Append("  Co2emissionFactor: ").Append(Co2emissionFactor).Append("\n");
             sb.Append("  ResourceDepot: ").Append(ResourceDepot).Append("\n");
             sb.Append("  OverallVisitDurationEfficiency: ").Append(OverallVisitDurationEfficiency).Append("\n");
-            sb.Append("  IsReductionTimeOnlyUsedForDriving: ").Append(IsReductionTimeOnlyUsedForDriving).Append("\n");
             sb.Append("  IsReductionTimeIncludedInTotalWorkingTime: ").Append(IsReductionTimeIncludedInTotalWorkingTime).Append("\n");
+            sb.Append("  IsReductionTimeOnlyUsedForDriving: ").Append(IsReductionTimeOnlyUsedForDriving).Append("\n");
             sb.Append("  IsServiceHub: ").Append(IsServiceHub).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
